@@ -4,52 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Dados</title>
+    <title>SIA - Sistema de Inteligência Administrativa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --space-1: 4px;
-            --space-2: 8px;
-            --space-3: 12px;
-            --space-4: 16px;
-            --space-6: 24px;
-            --space-8: 32px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --duration-normal: 250ms;
-            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+            /* Escala de Cores Corporativa */
+            --bg-main: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --text-main: #334155;
+            --text-heading: #0f172a;
+            --text-muted: #64748b;
+
+            /* Geometria Rigorosa */
+            --radius-none: 0px;
+            --radius-xs: 1px;
+            --radius-sm: 2px;
+            
+            /* Animações Sóbrias */
+            --duration: 150ms;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
             font-family: 'Ubuntu', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: var(--bg-main);
+            color: var(--text-main);
             margin: 0;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Prevent Layout Shift (CLS = 0) */
-        .table-container {
-            min-height: 400px;
-        }
-
-        /* Custom Scrollbar for the Table */
+        /* Otimização de Scroll para ambiente Profissional */
         .custom-scrollbar::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
+            height: 4px;
+            width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f5f9;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
+            background: #94a3b8;
+            border-radius: 0px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #64748b;
+        }
+
+        /* Prevenção de Shift de Layout */
+        #root {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
     </style>
 <script type="importmap">
