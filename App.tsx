@@ -54,56 +54,66 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col p-6 lg:p-10">
-      {/* Header Corporativo */}
-      <header className="w-full max-w-[1600px] mx-auto mb-10 border-l-4 border-slate-900 pl-6">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+      {/* Header Corporativo Refinado */}
+      <header className="w-full max-w-[1600px] mx-auto mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 border-l-4 border-slate-900 pl-6">
           <div>
-            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mb-2 block">Enterprise Analytics Portal</span>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight leading-none uppercase">
+            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mb-1 block">Enterprise Analytics Portal</span>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none uppercase">
               Dashboard de Monitoramento
             </h1>
-            <p className="text-slate-400 mt-3 font-medium text-xs uppercase tracking-widest flex items-center gap-3">
-              <span className="h-[1px] w-8 bg-slate-300"></span>
-              Base Operacional Integrada
+            <p className="text-slate-400 mt-2 font-medium text-[10px] uppercase tracking-widest flex items-center gap-3">
+              <span className="h-[1px] w-6 bg-slate-300"></span>
+              Operação em Tempo Real
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
-            {activeTab === 'dados' && (
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input 
-                  type="text"
-                  placeholder="FILTRAR REGISTROS..."
-                  className="h-11 w-full md:w-72 pl-10 pr-4 bg-white border border-slate-200 rounded-none text-[11px] font-bold uppercase tracking-wider focus:outline-none focus:border-slate-900 transition-colors shadow-sm"
-                  value={state.searchTerm}
-                  onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
-                />
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
-            )}
+              <input 
+                type="text"
+                placeholder="BUSCAR REGISTROS..."
+                className="h-9 w-full md:w-60 pl-9 pr-4 bg-white border border-slate-200 rounded-none text-[10px] font-bold uppercase tracking-wider focus:outline-none focus:border-slate-900 transition-colors shadow-sm"
+                value={state.searchTerm}
+                onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
+              />
+            </div>
 
             <button 
               onClick={loadData}
               disabled={state.loading}
-              className="h-11 px-6 bg-slate-900 text-white rounded-none text-[11px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-30 flex items-center gap-3 shadow-md"
+              className="h-9 px-5 bg-[#0f172a] text-white rounded-none text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-30 flex items-center gap-2 shadow-md"
             >
-              <svg className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-3.5 h-3.5 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              {state.loading ? 'ATUALIZANDO' : 'SINCRONIZAR'}
+              {state.loading ? '...' : 'SINCRONIZAR'}
             </button>
           </div>
         </div>
 
-        {/* Navegação por Guias - Estilo Sóbrio */}
-        <nav className="mt-12 flex items-center border-b border-slate-200">
+        {/* Barra de Informações Compactas Sinalizada com a cor #0f172a */}
+        <div className="w-full bg-[#0f172a] text-white px-6 py-3 flex flex-wrap items-center justify-start gap-x-12 gap-y-3 shadow-sm mb-6 border-b border-slate-800">
+          <CompactMetric label="Registros" value={filteredData.length} />
+          <CompactMetric label="Setores" value={metrics.uniqueSectors} />
+          <CompactMetric label="Peso Total" value={metrics.totalWeight} />
+          <CompactMetric label="Conformidade" value={`${metrics.positiveRate}%`} />
+          <div className="ml-auto flex items-center gap-2 bg-slate-800/50 px-3 py-1 text-[9px] font-bold uppercase tracking-widest border border-slate-700/50">
+            <span className="w-1.5 h-1.5 bg-emerald-500 animate-pulse"></span>
+            Sinal Estável
+          </div>
+        </div>
+
+        {/* Navegação por Guias */}
+        <nav className="flex items-center border-b border-slate-200">
           <button
             onClick={() => setActiveTab('dados')}
-            className={`px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] transition-all relative ${
+            className={`px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative ${
               activeTab === 'dados'
                 ? 'text-slate-900 border-b-2 border-slate-900 bg-white'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -113,13 +123,13 @@ const App: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] transition-all relative ${
+            className={`px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative ${
               activeTab === 'dashboard'
                 ? 'text-slate-900 border-b-2 border-slate-900 bg-white'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
             }`}
           >
-            Visão Dashboard
+            Análise Gráfica
           </button>
         </nav>
       </header>
@@ -127,13 +137,7 @@ const App: React.FC = () => {
       {/* Área Principal */}
       <main className="w-full max-w-[1600px] mx-auto flex-grow">
         {activeTab === 'dados' ? (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <MetricCard label="Total Amostral" value={filteredData.length} desc="Registros Ativos" />
-              <MetricCard label="Segmentos" value={metrics.uniqueSectors} desc="Setores Mapeados" />
-              <MetricCard label="Carga Nominal" value={metrics.totalWeight} desc="Peso Consolidado" />
-              <MetricCard label="SLA Conformidade" value={`${metrics.positiveRate}%`} desc="Taxa de Aprovação" />
-            </div>
+          <div className="animate-in fade-in slide-in-from-bottom-1 duration-300">
             <DataTable data={filteredData} loading={state.loading} />
           </div>
         ) : (
@@ -142,33 +146,24 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Profissional */}
-      <footer className="w-full max-w-[1600px] mx-auto mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-slate-900"></div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">SIA Engine v4.0.2</span>
-          </div>
-          <span className="h-4 w-[1px] bg-slate-200 hidden md:block"></span>
-          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Acesso Restrito • Logs Monitorados</span>
+      <footer className="w-full max-w-[1600px] mx-auto mt-12 pt-6 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-4">
+          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">SIA Portal • 2025</span>
+          <span className="text-[9px] font-medium text-slate-400 uppercase tracking-widest">ID Operador: #1092</span>
         </div>
-        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-          Copyright &copy; {new Date().getFullYear()} • Inteligência Administrativa
+        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+          Gerenciamento Analítico Ubuntu
         </p>
       </footer>
     </div>
   );
 };
 
-const MetricCard: React.FC<{ label: string; value: string | number; desc: string }> = ({ label, value, desc }) => {
-  return (
-    <div className="p-6 bg-white border border-slate-200 rounded-none shadow-sm hover:border-blue-200 transition-colors group">
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">{label}</p>
-      <div className="flex items-baseline gap-2">
-        <p className="text-3xl font-bold text-slate-900 tracking-tighter">{value}</p>
-      </div>
-      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-4 border-t border-slate-50 pt-3 group-hover:text-blue-500 transition-colors">{desc}</p>
-    </div>
-  );
-};
+const CompactMetric: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
+  <div className="flex items-baseline gap-2">
+    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+    <span className="text-xs font-bold tracking-tight text-white">{value}</span>
+  </div>
+);
 
 export default App;

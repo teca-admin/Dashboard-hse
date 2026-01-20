@@ -24,18 +24,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
     const totalResp = simCount + naoCount;
     const conformityRate = totalResp > 0 ? (simCount / totalResp) * 100 : 0;
 
-    const shiftWeightMap: Record<string, number> = {};
-    data.forEach(row => {
-      const p = parseFloat(row.peso.replace(',', '.')) || 0;
-      shiftWeightMap[row.turno] = (shiftWeightMap[row.turno] || 0) + p;
-    });
-
     return {
       topSectors,
       conformityRate,
       simCount,
       naoCount,
-      shiftWeights: Object.entries(shiftWeightMap),
       totalEntries: data.length
     };
   }, [data]);
@@ -129,47 +122,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
         </div>
       </div>
 
-      {/* Carga Operacional por Turno - Cards Analíticos */}
-      <div className="lg:col-span-12 bg-white p-10 border border-slate-200 shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-baseline mb-12 gap-4">
-          <div>
-            <h3 className="text-blue-600 text-[10px] font-bold uppercase tracking-[0.3em] mb-2">Monitoramento de Capacidade</h3>
-            <p className="text-slate-900 text-xl font-bold uppercase tracking-tight">Carga Acumulada por Período</p>
-          </div>
-          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 border border-slate-100">Atualização em Tempo Real</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {analytics.shiftWeights.map(([shift, weight]) => (
-            <div key={shift} className="bg-slate-50/50 p-8 border border-slate-100 hover:border-slate-300 transition-all group">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Périodo: {shift}</span>
-                <div className="w-1.5 h-1.5 bg-blue-600"></div>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <p className="text-3xl font-bold text-slate-900 tracking-tighter">{weight.toFixed(1)}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Un. Peso</p>
-              </div>
-              <div className="mt-6 w-full h-[2px] bg-slate-200">
-                <div className="h-full bg-slate-400 w-1/3 group-hover:bg-slate-900 transition-colors"></div>
-              </div>
-            </div>
-          ))}
-
-          {/* Card Resumo de Pontuação */}
-          <div className="bg-slate-900 p-8 border border-slate-900 flex flex-col justify-between shadow-lg">
-            <div>
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-2 block">Score Consolidado</span>
-              <p className="text-white text-4xl font-bold tracking-tighter tabular-nums leading-none">
-                {analytics.totalEntries * 10}
-              </p>
-              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-2">Agregado Operacional</p>
-            </div>
-            <div className="h-[1px] w-full bg-slate-800 mt-8"></div>
-            <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest mt-4">Nível de Performance: ALTA</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
