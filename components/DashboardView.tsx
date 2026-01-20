@@ -39,7 +39,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-12 gap-3 h-[calc(100vh-230px)] animate-pulse">
+      <div className="grid grid-cols-12 gap-3 h-full animate-pulse">
         <div className="col-span-8 flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-3 h-20 bg-slate-100 rounded-sm"></div>
           <div className="flex-1 bg-slate-100 rounded-sm"></div>
@@ -55,10 +55,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   if (!analytics) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-[calc(100vh-230px)] min-h-[450px] overflow-hidden">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full min-h-0 overflow-hidden pb-1">
       
       {/* Bloco Esquerdo: Turnos e Domínio */}
-      <div className="lg:col-span-8 flex flex-col gap-3 overflow-hidden">
+      <div className="lg:col-span-8 flex flex-col gap-3 h-full min-h-0">
         
         {/* Row superior: 3 Turnos */}
         <div className="grid grid-cols-3 gap-3 h-24 shrink-0">
@@ -67,8 +67,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
           <TurnoCard label="NOTURNO" sub="Turno 03" count={analytics.turno3} color="from-slate-800 to-slate-950" />
         </div>
 
-        {/* Card Dominio */}
-        <div className="flex-1 min-h-0">
+        {/* Card Dominio - Ocupa o restante da altura da coluna esquerda */}
+        <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
             title="Distribuição por Domínio" 
             items={analytics.dominios} 
@@ -79,8 +79,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
       </div>
 
       {/* Bloco Direito: Setor e Função */}
-      <div className="lg:col-span-4 flex flex-col gap-3 overflow-hidden">
-        <div className="flex-1 min-h-0">
+      <div className="lg:col-span-4 flex flex-col gap-3 h-full min-h-0">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
             title="Setores Ativos" 
             items={analytics.setores} 
@@ -88,7 +88,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
           />
         </div>
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
             title="Funções Operacionais" 
             items={analytics.funcoes} 
@@ -106,14 +106,14 @@ const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: st
   <div className={`bg-gradient-to-br ${color} p-4 rounded-sm shadow-md border border-white/5 flex flex-col justify-between relative overflow-hidden group transition-all hover:scale-[1.01]`}>
     <div className="absolute -right-2 -top-2 w-12 h-12 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
     <div>
-      <h4 className="text-[8px] font-black text-white/40 uppercase tracking-[0.25em]">{sub}</h4>
-      <p className="text-[10px] font-bold text-white tracking-widest">{label}</p>
+      <h4 className="text-[8px] font-bold text-white/40 uppercase tracking-[0.25em]">{sub}</h4>
+      <p className="text-[10px] font-semibold text-white tracking-widest">{label}</p>
     </div>
     <div className="flex items-end justify-between">
-      <span className="text-3xl font-black text-white tracking-tighter tabular-nums drop-shadow-sm font-mono">
+      <span className="text-3xl font-bold text-white tracking-tighter tabular-nums drop-shadow-sm font-mono">
         {count}
       </span>
-      <span className="text-[7px] font-black text-white/30 uppercase tracking-widest border-l border-white/10 pl-2 mb-1">UNIDADES</span>
+      <span className="text-[7px] font-semibold text-white/30 uppercase tracking-widest border-l border-white/10 pl-2 mb-1">UNIDADES</span>
     </div>
   </div>
 );
@@ -132,9 +132,9 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
         <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           {icon}
         </svg>
-        <h3 className="text-[9px] font-black text-slate-800 uppercase tracking-[0.2em]">{title}</h3>
+        <h3 className="text-[9px] font-bold text-slate-800 uppercase tracking-[0.2em]">{title}</h3>
       </div>
-      <div className="px-1.5 py-0.5 bg-slate-100 rounded-sm text-[7px] font-mono font-bold text-slate-400 border border-slate-200 uppercase tracking-widest">
+      <div className="px-1.5 py-0.5 bg-slate-100 rounded-sm text-[7px] font-mono font-semibold text-slate-400 border border-slate-200 uppercase tracking-widest">
         DATASET_INDEX
       </div>
     </div>
@@ -144,14 +144,14 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
         <div key={item.label} className="group relative">
           <div className="flex justify-between items-center mb-1">
             <div className="flex items-center gap-2 overflow-hidden">
-              <span className="text-[8px] font-mono font-bold text-slate-300">{(idx + 1).toString().padStart(2, '0')}</span>
-              <span className="text-[9px] font-black text-slate-600 uppercase truncate tracking-tight" title={item.label}>
+              <span className="text-[8px] font-mono font-semibold text-slate-300">{(idx + 1).toString().padStart(2, '0')}</span>
+              <span className="text-[9px] font-bold text-slate-600 uppercase truncate tracking-tight" title={item.label}>
                 {item.label}
               </span>
             </div>
             <div className="flex items-center gap-2.5 shrink-0">
-              <span className="text-[10px] font-black text-slate-900 tabular-nums font-mono">{item.count}</span>
-              <span className="text-[7px] font-bold text-slate-400 bg-slate-50 px-1 py-0.5 rounded-sm border border-slate-100">{item.percentage.toFixed(0)}%</span>
+              <span className="text-[10px] font-bold text-slate-900 tabular-nums font-mono">{item.count}</span>
+              <span className="text-[7px] font-semibold text-slate-400 bg-slate-50 px-1 py-0.5 rounded-sm border border-slate-100">{item.percentage.toFixed(0)}%</span>
             </div>
           </div>
           <div className="h-1 w-full bg-slate-100 rounded-none overflow-hidden">
@@ -164,14 +164,14 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
           </div>
         </div>
       )) : (
-        <div className="h-full flex items-center justify-center text-[8px] font-bold text-slate-300 uppercase tracking-widest">
+        <div className="h-full flex items-center justify-center text-[8px] font-semibold text-slate-300 uppercase tracking-widest">
           Sem Dados de Processamento
         </div>
       )}
     </div>
     
-    <div className="px-4 py-1.5 bg-slate-900 flex justify-between items-center shrink-0">
-      <span className="text-[7px] font-black text-white/30 uppercase tracking-[0.3em]">INTELLIGENCE UNIT v3.5</span>
+    <div className="px-4 py-1.5 bg-slate-900 flex justify-between items-center shrink-0 mt-auto">
+      <span className="text-[7px] font-bold text-white/30 uppercase tracking-[0.3em]">INTELLIGENCE UNIT v3.5</span>
       <div className="flex gap-1.5">
         <div className="w-1 h-1 bg-blue-500 rounded-none animate-pulse"></div>
         <div className="w-1 h-1 bg-emerald-500 rounded-none animate-pulse delay-75"></div>

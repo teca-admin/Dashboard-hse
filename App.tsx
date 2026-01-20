@@ -59,14 +59,14 @@ const App: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-slate-900 flex items-center justify-center rounded-sm shadow-md border border-slate-700">
-              <span className="text-white font-black text-sm tracking-tighter">SIA</span>
+              <span className="text-white font-bold text-sm tracking-tighter">SIA</span>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[8px] font-black text-blue-600 uppercase tracking-[0.25em]">INTELLIGENCE UNIT</span>
-                <span className="px-1.5 py-0 bg-emerald-500 text-white text-[7px] font-black rounded-sm uppercase tracking-widest">Ativo</span>
+                <span className="text-[8px] font-semibold text-blue-600 uppercase tracking-[0.25em]">INTELLIGENCE UNIT</span>
+                <span className="px-1.5 py-0 bg-emerald-500 text-white text-[7px] font-bold rounded-sm uppercase tracking-widest">Ativo</span>
               </div>
-              <h1 className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">
+              <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none uppercase">
                 Monitoramento Estratégico
               </h1>
             </div>
@@ -77,7 +77,7 @@ const App: React.FC = () => {
               <input 
                 type="text"
                 placeholder="FILTRAR DATASET..."
-                className="h-8 w-48 pl-8 pr-3 bg-white border border-slate-300 rounded-sm text-[8px] font-bold uppercase tracking-wider focus:outline-none focus:border-blue-600 shadow-sm transition-all"
+                className="h-8 w-48 pl-8 pr-3 bg-white border border-slate-300 rounded-sm text-[8px] font-semibold uppercase tracking-wider focus:outline-none focus:border-blue-600 shadow-sm transition-all"
                 value={state.searchTerm}
                 onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
               />
@@ -91,7 +91,7 @@ const App: React.FC = () => {
             <button 
               onClick={loadData}
               disabled={state.loading}
-              className="h-8 px-4 bg-blue-600 text-white rounded-sm text-[8px] font-black uppercase tracking-widest hover:bg-blue-700 disabled:opacity-30 flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+              className="h-8 px-4 bg-blue-600 text-white rounded-sm text-[8px] font-bold uppercase tracking-widest hover:bg-blue-700 disabled:opacity-30 flex items-center gap-2 shadow-lg shadow-blue-500/10 transition-all active:scale-95"
             >
               <svg className={`w-3.5 h-3.5 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -102,7 +102,7 @@ const App: React.FC = () => {
         </div>
 
         {/* InfoBar de Métricas */}
-        <div className="w-full bg-white rounded-sm p-2 flex items-center justify-between shadow-md border border-slate-200 mb-3 shrink-0 relative overflow-hidden">
+        <div className="w-full bg-white rounded-sm p-2 flex items-center justify-between shadow-md border border-slate-200 mb-2 shrink-0 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-600"></div>
           <div className="flex gap-10 pl-4">
             <MetricBlock label="Registros" value={filteredData.length} />
@@ -120,10 +120,10 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content Area - Animações reduzidas para 150ms */}
-      <main className="w-full max-w-[1600px] mx-auto flex-grow overflow-hidden">
+      {/* Main Content Area - Ocupa todo o espaço restante */}
+      <main className="w-full max-w-[1600px] mx-auto flex-grow min-h-0 overflow-hidden">
         {activeTab === 'dados' ? (
-          <div className="h-full animate-in fade-in slide-in-from-bottom-2 duration-150 ease-out">
+          <div className="h-full animate-in fade-in duration-150 ease-out">
             <DataTable data={filteredData} loading={state.loading} />
           </div>
         ) : (
@@ -134,16 +134,16 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Minimalista */}
-      <footer className="w-full max-w-[1600px] mx-auto mt-3 flex justify-between items-center shrink-0 px-1 pt-2 border-t border-slate-200">
+      <footer className="w-full max-w-[1600px] mx-auto mt-2 flex justify-between items-center shrink-0 px-1 pt-2 border-t border-slate-200">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-none bg-emerald-500"></div>
-            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">SIA ENGINE v3.5.2</span>
+            <span className="text-[8px] font-semibold text-slate-500 uppercase tracking-widest">SIA ENGINE v3.5.2</span>
           </div>
           <span className="text-slate-300 text-xs">|</span>
-          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em]">OP: #1092-A</span>
+          <span className="text-[8px] font-medium text-slate-400 uppercase tracking-[0.2em]">OP: #1092-A</span>
         </div>
-        <p className="text-[8px] text-slate-400 font-black uppercase tracking-[0.2em]">
+        <p className="text-[8px] text-slate-400 font-semibold uppercase tracking-[0.2em]">
           UBUNTU ANALYTICS &copy; 2025
         </p>
       </footer>
@@ -153,15 +153,15 @@ const App: React.FC = () => {
 
 const MetricBlock: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
   <div className="flex flex-col gap-0">
-    <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em]">{label}</span>
-    <span className="text-sm font-black text-slate-900 tracking-tight tabular-nums font-mono">{value}</span>
+    <span className="text-[7px] font-semibold text-slate-400 uppercase tracking-[0.2em]">{label}</span>
+    <span className="text-sm font-bold text-slate-900 tracking-tight tabular-nums font-mono">{value}</span>
   </div>
 );
 
 const NavBtn: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 rounded-sm text-[8px] font-black uppercase tracking-widest transition-all ${
+    className={`px-4 py-1.5 rounded-sm text-[8px] font-bold uppercase tracking-widest transition-all ${
       active 
         ? 'bg-white text-blue-600 shadow-sm' 
         : 'text-slate-500 hover:text-slate-800'
