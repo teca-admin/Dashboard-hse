@@ -6,93 +6,106 @@ const SHEET_NAME = 'Dados Tratados';
 const RANGE = 'I:T'; 
 
 /**
- * Função para extrair dados da planilha com maior resiliência.
+ * Converte a string de data do Google "Date(2025,9,4,17,31,47)" para "DD/MM/AAAA HH:MM"
+ * Nota: No formato do Google, o mês é indexado em zero (0-11).
+ */
+function formatGoogleDate(dateStr: string): string {
+  if (!dateStr || !dateStr.includes('Date')) return dateStr;
+
+  try {
+    const match = dateStr.match(/\d+/g);
+    if (!match || match.length < 3) return dateStr;
+
+    const year = match[0];
+    const month = (parseInt(match[1]) + 1).toString().padStart(2, '0');
+    const day = match[2].padStart(2, '0');
+    const hours = (match[3] || '00').padStart(2, '0');
+    const minutes = (match[4] || '00').padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+/**
+ * Função para extrair dados da planilha com resiliência industrial.
  */
 export async function fetchSpreadsheetData(): Promise<SheetRow[]> {
-  // Adicionamos um timestamp (tcb) para evitar que o navegador ou o Google retornem dados em cache
   const cacheBuster = `&tcb=${Date.now()}`;
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&range=${RANGE}${cacheBuster}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
 
   try {
     const response = await fetch(url, { 
       method: 'GET',
       mode: 'cors',
-      credentials: 'omit' 
+      credentials: 'omit',
+      signal: controller.signal
     });
 
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      if (response.status === 404 || response.status === 401 || response.status === 403) {
-        throw new Error("Acesso Negado: A planilha não foi encontrada ou não está compartilhada publicamente.");
-      }
-      throw new Error(`Erro de rede: O servidor do Google retornou status ${response.status}.`);
+      throw new Error(`Servidor Google indisponível (Status ${response.status}).`);
     }
 
     const text = await response.text();
     
-    // Extração robusta do JSON
-    // O Google retorna: google.visualization.Query.setResponse({ ... });
-    const startIdx = text.indexOf('{');
-    const endIdx = text.lastIndexOf('}');
+    const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
     
-    if (startIdx === -1 || endIdx === -1) {
-      throw new Error("Formato de resposta inválido: Não foi possível localizar o objeto de dados na resposta.");
+    let jsonStr = "";
+    if (!jsonMatch || !jsonMatch[1]) {
+      const startIdx = text.indexOf('{');
+      const endIdx = text.lastIndexOf('}');
+      if (startIdx === -1 || endIdx === -1) throw new Error("Estrutura de dados corrompida na resposta.");
+      jsonStr = text.substring(startIdx, endIdx + 1);
+    } else {
+      jsonStr = jsonMatch[1];
     }
 
-    const jsonStr = text.substring(startIdx, endIdx + 1);
     const json = JSON.parse(jsonStr);
     
     if (json.status === 'error') {
-      const errorMsg = json.errors?.[0]?.detailed_message || json.errors?.[0]?.message || "Erro na consulta do Google Sheets.";
-      throw new Error(`Google Sheets: ${errorMsg}`);
+      throw new Error(`Google Sheets: ${json.errors?.[0]?.detailed_message || "Acesso negado à planilha."}`);
     }
 
     const table = json.table;
-    if (!table || !table.rows) {
-      console.warn("Tabela ou linhas não encontradas no JSON.");
-      return [];
-    }
+    if (!table || !table.rows) return [];
 
-    /**
-     * Mapeamento dos dados do GViz (I:T):
-     * index 0: ID (Col I)
-     * index 1: Timestamp (Col J)
-     * index 2: Setor (Col K)
-     * index 3: Função (Col L)
-     * index 4: Turno (Col M)
-     * index 5: Fase (Col N)
-     * index 7: Domínios (Col P)
-     * index 8: Itens (Col Q)
-     * index 9: Resposta (Col R)
-     * index 11: Peso (Col T)
-     */
     return table.rows.map((row: any) => {
       const cells = row.c;
       const getVal = (idx: number) => {
-        if (!cells || !cells[idx]) return '';
+        if (!cells || cells.length <= idx || !cells[idx]) return '';
         const cell = cells[idx];
-        return cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || '');
+        // Preferimos o valor formatado 'f' se disponível, caso contrário usamos o bruto 'v'
+        return cell.f || (cell.v !== null && cell.v !== undefined ? String(cell.v) : '');
       };
       
+      const rawTimestamp = getVal(1);
+      
       return {
-        id: String(getVal(0)),
-        timestamp: String(getVal(1)),
-        setor: String(getVal(2)),
-        funcao: String(getVal(3)),
-        turno: String(getVal(4)),
-        fase: String(getVal(5)),
-        dominios: String(getVal(7)),
-        itens: String(getVal(8)),
-        resposta: String(getVal(9)),
-        peso: String(getVal(11) || '0'),
+        id: getVal(0),
+        timestamp: formatGoogleDate(rawTimestamp),
+        setor: getVal(2),
+        funcao: getVal(3),
+        turno: getVal(4),
+        fase: getVal(5),
+        dominios: getVal(7),
+        itens: getVal(8),
+        resposta: getVal(9),
+        peso: getVal(11) || '0',
       };
-    }).filter((row: SheetRow) => row.id && row.id !== 'ID'); // Filtra cabeçalhos se existirem
+    }).filter((row: SheetRow) => row.id && row.id.trim() !== '' && row.id !== 'ID');
     
   } catch (error: any) {
-    console.error("Erro de Sincronização:", error);
+    clearTimeout(timeoutId);
+    console.error("Critical Sync Error:", error.name, error.message);
     
-    // Tratamento de erros de conexão/CORS
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      throw new Error("Falha de Conexão: Não foi possível contactar o servidor. Verifique sua internet ou se o link da planilha é público.");
+    if (error.name === 'AbortError') {
+      throw new Error("Tempo Limite Excedido: A conexão com o Google Sheets está muito lenta.");
     }
     
     throw error;

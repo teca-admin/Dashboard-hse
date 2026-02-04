@@ -1,36 +1,30 @@
 
-import React, { useMemo, useState } from 'react';
-import { SheetRow } from '../types';
+import React, { useMemo } from 'react';
+import { SheetRow, GlobalFilters } from '../types';
 
 interface DashboardViewProps {
   data: SheetRow[];
   loading: boolean;
+  filters: GlobalFilters;
+  onFilterChange: (key: keyof GlobalFilters, value: string | null) => void;
 }
 
-const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
-  // Estados para controlar os 4 eixos de filtragem
-  const [selectedTurno, setSelectedTurno] = useState<string | null>(null);
-  const [selectedDominio, setSelectedDominio] = useState<string | null>(null);
-  const [selectedSetor, setSelectedSetor] = useState<string | null>(null);
-  const [selectedFuncao, setSelectedFuncao] = useState<string | null>(null);
-
+const DashboardView: React.FC<DashboardViewProps> = ({ data, loading, filters, onFilterChange }) => {
   const analytics = useMemo(() => {
     if (data.length === 0) return null;
 
     const parsePeso = (p: string) => parseFloat(p.replace(',', '.')) || 0;
 
-    // Função auxiliar para filtrar dados omitindo o próprio eixo (para calcular as médias do próprio eixo)
-    const getFilteredData = (excludeKey?: 'turno' | 'dominios' | 'setor' | 'funcao') => {
+    const getFilteredData = (excludeKey?: keyof GlobalFilters) => {
       return data.filter(r => {
-        const matchTurno = (excludeKey === 'turno' || !selectedTurno) ? true : r.turno.toUpperCase().includes(selectedTurno.toUpperCase());
-        const matchDominio = (excludeKey === 'dominios' || !selectedDominio) ? true : r.dominios === selectedDominio;
-        const matchSetor = (excludeKey === 'setor' || !selectedSetor) ? true : r.setor === selectedSetor;
-        const matchFuncao = (excludeKey === 'funcao' || !selectedFuncao) ? true : r.funcao === selectedFuncao;
+        const matchTurno = (excludeKey === 'turno' || !filters.turno) ? true : r.turno.toUpperCase().includes(filters.turno.toUpperCase());
+        const matchDominio = (excludeKey === 'dominio' || !filters.dominio) ? true : r.dominios === filters.dominio;
+        const matchSetor = (excludeKey === 'setor' || !filters.setor) ? true : r.setor === filters.setor;
+        const matchFuncao = (excludeKey === 'funcao' || !filters.funcao) ? true : r.funcao === filters.funcao;
         return matchTurno && matchDominio && matchSetor && matchFuncao;
       });
     };
 
-    // Função para calcular médias dos turnos respeitando os outros filtros
     const getTurnoAverage = (turnoPattern: string) => {
       const source = getFilteredData('turno');
       const filtered = source.filter(r => r.turno.toUpperCase().includes(turnoPattern.toUpperCase()));
@@ -73,159 +67,99 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
       turno2: getTurnoAverage('2'),
       turno3: getTurnoAverage('3'),
       turnoComercial: getTurnoAverage('COMERCIAL'),
-      dominios: getAverageMap(getFilteredData('dominios'), 'dominios'),
+      dominios: getAverageMap(getFilteredData('dominio'), 'dominios'),
       setores: getAverageMap(getFilteredData('setor'), 'setor'),
       funcoes: getAverageMap(getFilteredData('funcao'), 'funcao'),
       total: data.length
     };
-  }, [data, selectedTurno, selectedDominio, selectedSetor, selectedFuncao]);
+  }, [data, filters]);
 
-  const handleToggleTurno = (turno: string) => setSelectedTurno(prev => prev === turno ? null : turno);
-  const handleToggleDominio = (dominio: string) => setSelectedDominio(prev => prev === dominio ? null : dominio);
-  const handleToggleSetor = (setor: string) => setSelectedSetor(prev => prev === setor ? null : setor);
-  const handleToggleFuncao = (funcao: string) => setSelectedFuncao(prev => prev === funcao ? null : funcao);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-12 gap-6 h-full animate-pulse">
-        <div className="col-span-8 flex flex-col gap-6">
-          <div className="grid grid-cols-4 gap-6 h-32 bg-slate-50 rounded-2xl"></div>
-          <div className="flex-1 bg-slate-50 rounded-2xl"></div>
-        </div>
-        <div className="col-span-4 flex flex-col gap-6">
-          <div className="flex-[33] bg-slate-50 rounded-2xl"></div>
-          <div className="flex-[17] bg-slate-50 rounded-2xl"></div>
-        </div>
+  if (loading) return (
+    <div className="grid grid-cols-12 gap-6 h-full animate-pulse">
+      <div className="col-span-8 flex flex-col gap-6">
+        <div className="grid grid-cols-4 gap-6 h-32 bg-slate-50 rounded-2xl"></div>
+        <div className="flex-1 bg-slate-50 rounded-2xl"></div>
       </div>
-    );
-  }
+      <div className="col-span-4 flex flex-col gap-6">
+        <div className="flex-[33] bg-slate-50 rounded-2xl"></div>
+        <div className="flex-[17] bg-slate-50 rounded-2xl"></div>
+      </div>
+    </div>
+  );
 
   if (!analytics) return null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full min-h-0 overflow-hidden pb-1">
-      
-      {/* Coluna Principal */}
       <div className="lg:col-span-8 flex flex-col gap-5 h-full min-h-0">
-        
-        {/* Cards de Turno */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 h-auto lg:h-28 shrink-0 p-1">
           <TurnoCard 
-            label="Equipe Matutina" 
-            sub="Média Turno 01" 
-            count={analytics.turno1} 
-            isActive={selectedTurno === '1'} 
-            isFilteredByOther={!!(selectedDominio || selectedSetor || selectedFuncao)}
-            onClick={() => handleToggleTurno('1')}
+            label="Equipe Matutina" sub="Média Turno 01" count={analytics.turno1} 
+            isActive={filters.turno === '1'} isFilteredByOther={!!(filters.dominio || filters.setor || filters.funcao)}
+            onClick={() => onFilterChange('turno', '1')}
           />
           <TurnoCard 
-            label="Equipe Vespertina" 
-            sub="Média Turno 02" 
-            count={analytics.turno2} 
-            isActive={selectedTurno === '2'} 
-            isFilteredByOther={!!(selectedDominio || selectedSetor || selectedFuncao)}
-            onClick={() => handleToggleTurno('2')}
+            label="Equipe Vespertina" sub="Média Turno 02" count={analytics.turno2} 
+            isActive={filters.turno === '2'} isFilteredByOther={!!(filters.dominio || filters.setor || filters.funcao)}
+            onClick={() => onFilterChange('turno', '2')}
           />
           <TurnoCard 
-            label="Equipe Noturna" 
-            sub="Média Turno 03" 
-            count={analytics.turno3} 
-            isActive={selectedTurno === '3'} 
-            isFilteredByOther={!!(selectedDominio || selectedSetor || selectedFuncao)}
-            onClick={() => handleToggleTurno('3')}
+            label="Equipe Noturna" sub="Média Turno 03" count={analytics.turno3} 
+            isActive={filters.turno === '3'} isFilteredByOther={!!(filters.dominio || filters.setor || filters.funcao)}
+            onClick={() => onFilterChange('turno', '3')}
           />
           <TurnoCard 
-            label="Equipe Comercial" 
-            sub="Média Comercial" 
-            count={analytics.turnoComercial} 
-            isActive={selectedTurno === 'COMERCIAL'} 
-            isFilteredByOther={!!(selectedDominio || selectedSetor || selectedFuncao)}
-            onClick={() => handleToggleTurno('COMERCIAL')}
+            label="Equipe Comercial" sub="Média Comercial" count={analytics.turnoComercial} 
+            isActive={filters.turno === 'COMERCIAL'} isFilteredByOther={!!(filters.dominio || filters.setor || filters.funcao)}
+            onClick={() => onFilterChange('turno', 'COMERCIAL')}
           />
         </div>
 
-        {/* Gráfico de Médias por Domínio */}
         <div className="flex-1 min-h-0">
           <VerticalBarCard 
-            title="Média de Carga por Domínio" 
-            items={analytics.dominios} 
-            barColor="bg-indigo-500"
-            activeItem={selectedDominio}
-            onItemClick={handleToggleDominio}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
+            title="Média de Carga por Domínio" items={analytics.dominios} barColor="bg-indigo-500"
+            activeItem={filters.dominio} onItemClick={(l) => onFilterChange('dominio', l)}
+            icon={<path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
           />
         </div>
       </div>
 
-      {/* Coluna Lateral - Configurada para 66% / 34% de ocupação (33/50 e 17/50) */}
       <div className="lg:col-span-4 flex flex-col gap-5 h-full min-h-0">
-        <div className="flex-[33] min-h-0 overflow-hidden">
+        <div className="flex-[33] min-h-0">
           <ListCard 
-            title="Média Setorial" 
-            items={analytics.setores} 
-            barColor="bg-emerald-500"
-            activeItem={selectedSetor}
-            onItemClick={handleToggleSetor}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
+            title="Média Setorial" items={analytics.setores} barColor="bg-emerald-500"
+            activeItem={filters.setor} onItemClick={(l) => onFilterChange('setor', l)}
+            icon={<path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
           />
         </div>
-        <div className="flex-[17] min-h-0 overflow-hidden">
+        <div className="flex-[17] min-h-0">
           <ListCard 
-            title="Média Funcional" 
-            items={analytics.funcoes} 
-            barColor="bg-indigo-400"
-            activeItem={selectedFuncao}
-            onItemClick={handleToggleFuncao}
-            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
+            title="Média Funcional" items={analytics.funcoes} barColor="bg-indigo-400"
+            activeItem={filters.funcao} onItemClick={(l) => onFilterChange('funcao', l)}
+            icon={<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
           />
         </div>
       </div>
-
     </div>
   );
 };
 
-const TurnoCard: React.FC<{ label: string; sub: string; count: number; isActive: boolean; isFilteredByOther: boolean; onClick: () => void }> = ({ label, sub, count, isActive, isFilteredByOther, onClick }) => {
-  return (
-    <button 
-      onClick={onClick}
-      className={`p-5 rounded-xl shadow-lg border transition-all duration-300 flex flex-col justify-between relative overflow-hidden text-left group active:scale-95 ${
-        isActive 
-          ? 'bg-indigo-600 border-indigo-400 ring-2 ring-indigo-300 ring-offset-2' 
-          : 'bg-slate-900 border-white/10 hover:bg-slate-800'
-      }`}
-    >
-      <div className={`absolute right-0 top-0 w-20 h-20 rounded-full -mr-10 -mt-10 transition-colors duration-500 ${
-        isActive ? 'bg-white/10' : 'bg-white/5 group-hover:bg-white/10'
-      }`}></div>
-      
-      <div>
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <h4 className={`text-[9px] font-bold uppercase tracking-[0.2em] transition-colors ${
-            isActive ? 'text-white/80' : 'text-slate-400 group-hover:text-slate-300'
-          }`}>{sub}</h4>
-          {isFilteredByOther && !isActive && (
-            <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse"></span>
-          )}
-        </div>
-        <p className="text-xs font-bold text-white tracking-tight line-clamp-1">{label}</p>
+const TurnoCard: React.FC<{ label: string; sub: string; count: number; isActive: boolean; isFilteredByOther: boolean; onClick: () => void }> = ({ label, sub, count, isActive, isFilteredByOther, onClick }) => (
+  <button onClick={onClick} className={`p-5 rounded-xl shadow-lg border transition-all duration-300 flex flex-col justify-between relative overflow-hidden text-left group active:scale-95 ${isActive ? 'bg-indigo-600 border-indigo-400 ring-2 ring-indigo-300' : 'bg-slate-900 border-white/10 hover:bg-slate-800'}`}>
+    <div className={`absolute right-0 top-0 w-20 h-20 rounded-full -mr-10 -mt-10 transition-colors duration-500 ${isActive ? 'bg-white/10' : 'bg-white/5'}`}></div>
+    <div>
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <h4 className={`text-[9px] font-bold uppercase tracking-[0.2em] ${isActive ? 'text-white/80' : 'text-slate-400'}`}>{sub}</h4>
+        {isFilteredByOther && !isActive && <span className="w-1 h-1 rounded-full bg-indigo-400 animate-pulse"></span>}
       </div>
-
-      <div className="flex items-end justify-between relative z-10">
-        <span className="text-2xl font-bold text-white tracking-tighter tabular-nums drop-shadow-md">
-          {count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-        <div className="flex items-center gap-1.5 mb-1 opacity-80">
-          <span className={`text-[8px] font-bold uppercase tracking-widest border-l pl-1.5 ${
-            isActive ? 'border-white/40 text-white' : 'border-slate-700 text-slate-400'
-          }`}>
-            {isFilteredByOther ? 'Média Cruz.' : 'Média'}
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-};
+      <p className="text-xs font-bold text-white tracking-tight line-clamp-1">{label}</p>
+    </div>
+    <div className="flex items-end justify-between">
+      <span className="text-2xl font-bold text-white tabular-nums">{count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      <span className={`text-[8px] font-bold uppercase tracking-widest border-l pl-1.5 ${isActive ? 'border-white/40 text-white' : 'border-slate-700 text-slate-400'}`}>{isFilteredByOther ? 'Média Cruz.' : 'Média'}</span>
+    </div>
+  </button>
+);
 
 interface ListCardProps {
   title: string;
@@ -238,159 +172,61 @@ interface ListCardProps {
 
 const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon, activeItem, onItemClick }) => (
   <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-    <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+    <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
       <div className="flex items-center gap-2">
-        <div className={`p-1 rounded text-slate-700 transition-colors ${activeItem ? 'bg-indigo-600 text-white' : 'bg-slate-200'}`}>
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {icon}
-          </svg>
-        </div>
-        <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest truncate max-w-[200px]" title={title}>{title}</h3>
+        <div className={`p-1 rounded ${activeItem ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'}`}><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icon}</svg></div>
+        <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest truncate max-w-[200px]">{title}</h3>
       </div>
-      {activeItem && (
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-          <span className="text-[8px] font-bold text-indigo-600 uppercase tracking-widest">Ativo</span>
-        </div>
-      )}
+      {activeItem && <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span><span className="text-[8px] font-bold text-indigo-600 uppercase tracking-widest">Ativo</span></div>}
     </div>
-    
     <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-3 space-y-4">
       {items.length > 0 ? items.map((item, idx) => {
         const isActive = activeItem === item.label;
-        const isAnythingActive = activeItem !== null && activeItem !== undefined;
-        
+        const isAnythingActive = activeItem !== null;
         return (
-          <button 
-            key={item.label} 
-            onClick={() => onItemClick?.(item.label)}
-            className={`w-full text-left group transition-all duration-200 outline-none ${isActive ? 'scale-[1.02]' : ''}`}
-          >
+          <button key={item.label} onClick={() => onItemClick?.(item.label)} className={`w-full text-left group transition-all duration-200 ${isActive ? 'scale-[1.02]' : ''}`}>
             <div className="flex justify-between items-end mb-1">
               <div className="flex items-center gap-2 overflow-hidden">
-                <span className={`text-[9px] font-bold transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
-                  { (idx + 1).toString().padStart(2, '0') }
-                </span>
-                <span className={`text-xs font-bold truncate tracking-tight transition-colors ${
-                  isActive ? 'text-indigo-700' : isAnythingActive ? 'text-slate-300' : 'text-slate-800 group-hover:text-indigo-600'
-                }`} title={item.label}>
-                  {item.label}
-                </span>
+                <span className={`text-[9px] font-bold ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>{(idx + 1).toString().padStart(2, '0')}</span>
+                <span className={`text-xs font-bold truncate tracking-tight transition-colors ${isActive ? 'text-indigo-700' : isAnythingActive ? 'text-slate-300' : 'text-slate-800'}`}>{item.label}</span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-xs font-bold tabular-nums transition-colors ${
-                  isActive ? 'text-indigo-700' : isAnythingActive ? 'text-slate-300' : 'text-slate-900'
-                }`}>
-                  {item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
+              <span className={`text-xs font-bold tabular-nums ${isActive ? 'text-indigo-700' : isAnythingActive ? 'text-slate-300' : 'text-slate-900'}`}>{item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className={`h-full rounded-full transition-all duration-500 ${
-                  isActive ? 'bg-indigo-600' : isAnythingActive ? 'bg-slate-200' : barColor
-                }`}
-                style={{ width: `${item.percentage}%` }}
-              ></div>
+              <div className={`h-full rounded-full transition-all duration-500 ${isActive ? 'bg-indigo-600' : isAnythingActive ? 'bg-slate-200' : barColor}`} style={{ width: `${item.percentage}%` }}></div>
             </div>
           </button>
         );
       }) : (
-        <div className="h-full flex items-center justify-center text-center px-8">
-           <div className="flex flex-col items-center">
-              <div className="w-8 h-8 bg-slate-50 rounded-full mb-2 flex items-center justify-center text-slate-300">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">Sem dados combinados</span>
-           </div>
-        </div>
+        <div className="h-full flex items-center justify-center text-center"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sem dados combinados</span></div>
       )}
     </div>
   </div>
 );
 
-interface VerticalBarCardProps extends ListCardProps {
-    onItemClick?: (label: string) => void;
-    activeItem?: string | null;
-}
-
-const VerticalBarCard: React.FC<VerticalBarCardProps> = ({ title, items, barColor, icon, onItemClick, activeItem }) => (
+const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon, onItemClick, activeItem }) => (
   <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
       <div className="flex items-center gap-2.5">
-        <div className={`p-1.5 rounded-lg transition-colors ${activeItem ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700'}`}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {icon}
-          </svg>
-        </div>
+        <div className={`p-1.5 rounded-lg ${activeItem ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700'}`}><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">{icon}</svg></div>
         <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-wider">{title}</h3>
       </div>
-      <div className="flex items-center gap-1.5">
-        <div className={`w-1.5 h-1.5 rounded-full ${activeItem ? 'bg-indigo-600 animate-pulse' : 'bg-indigo-500'}`}></div>
-        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-          {activeItem ? 'Filtrando por Domínio' : 'Selecione para filtrar'}
-        </span>
-      </div>
+      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{activeItem ? 'Filtrando por Domínio' : 'Clique para filtrar'}</span>
     </div>
-    
     <div className="flex-1 px-8 py-6 flex items-end justify-around gap-6 overflow-hidden">
       {items.length > 0 ? items.map((item) => {
         const isActive = activeItem === item.label;
-        const isAnythingActive = activeItem !== null && activeItem !== undefined;
-        
+        const isAnythingActive = activeItem !== null;
         return (
-          <button 
-            key={item.label} 
-            onClick={() => onItemClick?.(item.label)}
-            className={`flex-1 flex flex-col items-center h-full justify-end max-w-[80px] animate-in slide-in-from-bottom-2 duration-300 group transition-all outline-none`}
-          >
-            <div className="relative flex-1 w-full flex flex-col justify-end">
-               <div className={`text-center mb-1 transition-all ${isActive ? 'scale-110' : ''}`}>
-                 <span className={`text-[11px] font-bold tabular-nums ${isActive ? 'text-indigo-600 font-extrabold' : 'text-slate-800'}`}>
-                   {item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                 </span>
-               </div>
-               
-               <div 
-                 className={`w-full rounded-t-xl shadow-lg relative overflow-hidden transition-all duration-300 border-2 ${
-                   isActive 
-                    ? 'bg-indigo-600 border-indigo-300 shadow-indigo-200' 
-                    : isAnythingActive 
-                        ? 'bg-slate-100 border-transparent opacity-30 grayscale group-hover:opacity-60 group-hover:grayscale-0'
-                        : `${barColor} border-transparent shadow-indigo-100/50 group-hover:brightness-110`
-                 }`}
-                 style={{ height: `${item.percentage}%`, minHeight: '12px' }}
-               >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent"></div>
-                  <div className={`absolute top-0 left-0 w-full h-1 ${isActive ? 'bg-white/40' : 'bg-white/30'}`}></div>
-               </div>
-            </div>
-            
-            <div className="mt-3 w-full flex flex-col items-center">
-              <div className="h-[36px] flex items-start justify-center text-center">
-                  <span className={`text-[10px] font-bold uppercase tracking-tight leading-tight line-clamp-2 transition-colors ${
-                    isActive ? 'text-indigo-700' : isAnythingActive ? 'text-slate-300' : 'text-slate-800 group-hover:text-indigo-600'
-                  }`} title={item.label}>
-                    {item.label}
-                  </span>
-              </div>
-            </div>
+          <button key={item.label} onClick={() => onItemClick?.(item.label)} className="flex-1 flex flex-col items-center h-full justify-end max-w-[80px] group transition-all">
+            <span className={`text-[11px] font-bold tabular-nums mb-1 ${isActive ? 'text-indigo-600 scale-110' : 'text-slate-800'}`}>{item.displayValue}</span>
+            <div className={`w-full rounded-t-xl shadow-lg relative transition-all duration-300 border-2 ${isActive ? 'bg-indigo-600 border-indigo-300' : isAnythingActive ? 'bg-slate-100 border-transparent opacity-30' : `${barColor} border-transparent group-hover:brightness-110`}`} style={{ height: `${item.percentage}%`, minHeight: '12px' }}></div>
+            <div className="mt-3 h-[36px] flex items-start text-center"><span className={`text-[10px] font-bold uppercase tracking-tight leading-tight line-clamp-2 ${isActive ? 'text-indigo-700 font-extrabold' : isAnythingActive ? 'text-slate-300' : 'text-slate-800 group-hover:text-indigo-600'}`}>{item.label}</span></div>
           </button>
         );
       }) : (
-        <div className="w-full h-full flex items-center justify-center text-center">
-           <div className="flex flex-col items-center">
-              <div className="w-12 h-12 bg-slate-50 rounded-full mb-3 flex items-center justify-center text-slate-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] max-w-[200px] leading-relaxed">Sem dados para esta combinação</span>
-           </div>
-        </div>
+        <div className="w-full h-full flex items-center justify-center text-center"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Sem dados para esta combinação</span></div>
       )}
-    </div>
-    
-    <div className="px-6 py-2.5 bg-slate-50 flex justify-center items-center border-t border-slate-100">
-      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.4em]">Analytics Estratégico Sincronizado</span>
     </div>
   </div>
 );
