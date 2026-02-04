@@ -57,17 +57,17 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   if (!analytics) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0 overflow-hidden pb-2">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full min-h-0 overflow-hidden pb-1">
       
       {/* Coluna Principal: Turnos e Performance por Domínio */}
-      <div className="lg:col-span-8 flex flex-col gap-6 h-full min-h-0">
+      <div className="lg:col-span-8 flex flex-col gap-5 h-full min-h-0">
         
         {/* Indicadores de Turno Profissionais */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 h-auto lg:h-32 shrink-0">
-          <TurnoCard label="Equipe Matutina" sub="Operação Turno 01" count={analytics.turno1} color="indigo" />
-          <TurnoCard label="Equipe Vespertina" sub="Operação Turno 02" count={analytics.turno2} color="slate" />
-          <TurnoCard label="Equipe Noturna" sub="Operação Turno 03" count={analytics.turno3} color="zinc" />
-          <TurnoCard label="Equipe Comercial" sub="Administrativo / Apoio" count={analytics.turnoComercial} color="emerald" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 h-auto lg:h-28 shrink-0">
+          <TurnoCard label="Equipe Matutina" sub="Turno 01" count={analytics.turno1} color="indigo" />
+          <TurnoCard label="Equipe Vespertina" sub="Turno 02" count={analytics.turno2} color="slate" />
+          <TurnoCard label="Equipe Noturna" sub="Turno 03" count={analytics.turno3} color="zinc" />
+          <TurnoCard label="Equipe Comercial" sub="Comercial" count={analytics.turnoComercial} color="emerald" />
         </div>
 
         {/* Gráfico de Barras Verticais de Domínios */}
@@ -82,7 +82,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
       </div>
 
       {/* Coluna Lateral: Contexto Operacional */}
-      <div className="lg:col-span-4 flex flex-col gap-6 h-full min-h-0">
+      <div className="lg:col-span-4 flex flex-col gap-5 h-full min-h-0">
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
             title="Distribuição Setorial" 
@@ -114,18 +114,18 @@ const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'i
   };
 
   return (
-    <div className={`${colorStyles[color]} p-6 rounded-2xl shadow-xl border border-white/10 flex flex-col justify-between relative overflow-hidden`}>
-      <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12"></div>
+    <div className={`${colorStyles[color]} p-5 rounded-xl shadow-lg border border-white/10 flex flex-col justify-between relative overflow-hidden`}>
+      <div className="absolute right-0 top-0 w-20 h-20 bg-white/5 rounded-full -mr-10 -mt-10"></div>
       <div>
-        <h4 className="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em] mb-1">{sub}</h4>
-        <p className="text-sm font-bold text-white tracking-tight">{label}</p>
+        <h4 className="text-[9px] font-bold text-white/70 uppercase tracking-[0.2em] mb-0.5">{sub}</h4>
+        <p className="text-xs font-bold text-white tracking-tight">{label}</p>
       </div>
       <div className="flex items-end justify-between">
-        <span className="text-4xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
+        <span className="text-3xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
           {count}
         </span>
-        <div className="flex items-center gap-2 mb-1.5 opacity-80">
-          <span className="text-[9px] font-bold text-white uppercase tracking-widest border-l border-white/30 pl-2">Análises</span>
+        <div className="flex items-center gap-1.5 mb-1 opacity-80">
+          <span className="text-[8px] font-bold text-white uppercase tracking-widest border-l border-white/30 pl-1.5">Análises</span>
         </div>
       </div>
     </div>
@@ -140,35 +140,34 @@ interface ListCardProps {
 }
 
 const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
-  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-      <div className="flex items-center gap-3">
-        <div className="p-1.5 bg-slate-200 rounded-lg text-slate-700">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+      <div className="flex items-center gap-2">
+        <div className="p-1 bg-slate-200 rounded text-slate-700">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {icon}
           </svg>
         </div>
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">{title}</h3>
+        <h3 className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">{title}</h3>
       </div>
-      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dataset</span>
     </div>
     
-    <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-5">
+    <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-3 space-y-4">
       {items.length > 0 ? items.map((item, idx) => (
         <div key={item.label}>
-          <div className="flex justify-between items-end mb-1.5">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <span className="text-[10px] font-bold text-slate-400">{ (idx + 1).toString().padStart(2, '0') }</span>
+          <div className="flex justify-between items-end mb-1">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="text-[9px] font-bold text-slate-400">{ (idx + 1).toString().padStart(2, '0') }</span>
               <span className="text-xs font-bold text-slate-800 truncate tracking-tight" title={item.label}>
                 {item.label}
               </span>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="text-sm font-bold text-slate-900 tabular-nums">{item.count}</span>
-              <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{item.percentage.toFixed(0)}%</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-bold text-slate-900 tabular-nums">{item.count}</span>
+              <span className="text-[9px] font-bold text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200">{item.percentage.toFixed(0)}%</span>
             </div>
           </div>
-          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
             <div 
               className={`h-full ${barColor} rounded-full`}
               style={{ width: `${item.percentage}%` }}
@@ -177,7 +176,7 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
         </div>
       )) : (
         <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">
-          Nenhum dado processado
+          Sem dados
         </div>
       )}
     </div>
@@ -185,32 +184,30 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
 );
 
 const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
-  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-    <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center shrink-0">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-100 rounded-xl text-indigo-700">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+      <div className="flex items-center gap-2.5">
+        <div className="p-1.5 bg-indigo-100 rounded-lg text-indigo-700">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {icon}
           </svg>
         </div>
-        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">{title}</h3>
+        <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-wider">{title}</h3>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Feed</span>
+      <div className="flex items-center gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Live</span>
       </div>
     </div>
     
-    <div className="flex-1 px-8 py-8 flex items-end justify-around gap-6 overflow-hidden">
+    <div className="flex-1 px-8 py-6 flex items-end justify-around gap-6 overflow-hidden">
       {items.length > 0 ? items.map((item) => (
         <div key={item.label} className="flex-1 flex flex-col items-center h-full justify-end max-w-[80px]">
           <div className="relative flex-1 w-full flex flex-col justify-end">
-             {/* Valor numérico acima da barra com alto contraste */}
              <div className="text-center mb-1">
                <span className="text-[11px] font-bold text-slate-800 tabular-nums">{item.count}</span>
              </div>
              
-             {/* Styled Vertical Bar */}
              <div 
                className={`w-full ${barColor} rounded-t-xl shadow-lg shadow-indigo-100/50 relative overflow-hidden`}
                style={{ height: `${item.percentage}%`, minHeight: '8px' }}
@@ -220,9 +217,8 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
              </div>
           </div>
           
-          {/* Executive Label below bar with improved contrast */}
-          <div className="mt-4 w-full flex flex-col items-center">
-            <div className="h-[40px] flex items-start justify-center text-center">
+          <div className="mt-3 w-full flex flex-col items-center">
+            <div className="h-[36px] flex items-start justify-center text-center">
                 <span className="text-[10px] font-bold text-slate-800 uppercase tracking-tight leading-tight line-clamp-2" title={item.label}>
                   {item.label}
                 </span>
@@ -234,13 +230,13 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
         </div>
       )) : (
         <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          Aguardando processamento analítico
+          Processando...
         </div>
       )}
     </div>
     
-    <div className="px-6 py-3 bg-slate-50 flex justify-center items-center border-t border-slate-100">
-      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em]">Visualização Estratégica Estrutural</span>
+    <div className="px-6 py-2.5 bg-slate-50 flex justify-center items-center border-t border-slate-100">
+      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.4em]">Analytics Estratégico Unificado</span>
     </div>
   </div>
 );

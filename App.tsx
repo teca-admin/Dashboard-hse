@@ -16,7 +16,6 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dados' | 'dashboard'>('dashboard');
 
   const loadData = useCallback(async (isBackground = false) => {
-    // Só mostramos o loading (esqueleto) na primeira carga ou se não for background
     if (!isBackground) {
       setState(prev => ({ ...prev, loading: true, error: null }));
     }
@@ -34,23 +33,15 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Carga inicial
     loadData();
-
-    // Configuração do intervalo para atualização automática (cada 30 segundos)
     const interval = setInterval(() => {
-      loadData(true); // Atualização silenciosa em background
+      loadData(true);
     }, 30000);
 
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const filteredData = useMemo(() => {
-    return state.data.filter(row => {
-      const searchString = `${row.id} ${row.setor} ${row.funcao} ${row.dominios} ${row.itens}`.toLowerCase();
-      return searchString.includes(state.searchTerm.toLowerCase());
-    });
-  }, [state.data, state.searchTerm]);
+  const filteredData = useMemo(() => state.data, [state.data]);
 
   const metrics = useMemo(() => {
     const sectors = new Set(filteredData.map(r => r.setor));
@@ -65,65 +56,47 @@ const App: React.FC = () => {
   }, [filteredData]);
 
   return (
-    <div className="h-screen bg-white flex flex-col p-4 lg:px-8 lg:py-6 overflow-hidden">
-      {/* Executive Header */}
-      <header className="w-full max-w-[1700px] mx-auto mb-6 shrink-0">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-slate-100 pb-6">
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-slate-900 flex items-center justify-center rounded-xl shadow-xl shadow-slate-200">
-              <span className="text-white font-bold text-xl tracking-tighter">S</span>
+    <div className="h-screen bg-white flex flex-col p-4 lg:px-8 lg:py-4 overflow-hidden">
+      {/* Optimized Unified Executive Header */}
+      <header className="w-full max-w-[1700px] mx-auto mb-4 shrink-0 border-b border-slate-100 pb-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          
+          {/* Brand & Title */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="w-10 h-10 bg-slate-900 flex items-center justify-center rounded-lg shadow-lg shadow-slate-200">
+              <span className="text-white font-bold text-lg tracking-tighter">S</span>
             </div>
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.3em]">HSE Strategic Intelligence</span>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[9px] font-bold text-indigo-600 uppercase tracking-[0.3em]">HSE Strategic Intelligence</span>
+                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">
                   <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
-                  <span className="text-[9px] font-bold uppercase tracking-widest">Live System</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest">Live</span>
                 </div>
               </div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight leading-none">
-                Gestão de Segurança do Trabalho
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">
+                Gestão de Segurança
               </h1>
             </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <input 
-                type="text"
-                placeholder="Pesquisar inteligência..."
-                className="h-10 w-64 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                value={state.searchTerm}
-                onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
-              />
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
 
-            {/* O botão de sincronização foi removido para priorizar a atualização automática em tempo real */}
-          </div>
-        </div>
-
-        {/* Corporate KPI Bar */}
-        <div className="w-full flex items-center justify-between mt-6 shrink-0">
-          <div className="flex gap-12">
-            <MetricBlock label="Volume de Amostragem" value={filteredData.length} sub="Registros Totais" />
-            <MetricBlock label="Abrangência Setorial" value={metrics.uniqueSectors} sub="Unidades Ativas" />
-            <MetricBlock label="Impacto Acumulado" value={metrics.totalWeight} sub="Carga de Trabalho" />
-            <MetricBlock label="Conformidade Geral" value={`${metrics.positiveRate}%`} sub="Índice de Segurança" highlight />
+          {/* Unified KPI Metrics Section */}
+          <div className="flex-1 flex justify-center gap-10">
+            <HeaderMetric label="Amostragem" value={filteredData.length} sub="Registros" />
+            <HeaderMetric label="Abrangência" value={metrics.uniqueSectors} sub="Unidades" />
+            <HeaderMetric label="Impacto" value={metrics.totalWeight} sub="Carga Total" />
+            <HeaderMetric label="Conformidade" value={`${metrics.positiveRate}%`} sub="Índice" highlight />
           </div>
           
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          {/* Tab Navigation Controls */}
+          <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
             <NavBtn active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Visão Analítica" />
-            <NavBtn active={activeTab === 'dados'} onClick={() => setActiveTab('dados')} label="Dataset Detalhado" />
+            <NavBtn active={activeTab === 'dados'} onClick={() => setActiveTab('dados')} label="Dataset" />
           </div>
         </div>
       </header>
 
-      {/* Main Analytical Space */}
+      {/* Main Analytical Space - Larger due to header optimization */}
       <main className="w-full max-w-[1700px] mx-auto flex-grow min-h-0 overflow-hidden">
         {activeTab === 'dados' ? (
           <div className="h-full">
@@ -137,15 +110,15 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer Profissional */}
-      <footer className="w-full max-w-[1700px] mx-auto mt-6 flex justify-between items-center shrink-0 px-2 pt-4 border-t border-slate-100">
+      <footer className="w-full max-w-[1700px] mx-auto mt-4 flex justify-between items-center shrink-0 px-2 pt-3 border-t border-slate-100">
         <div className="flex items-center gap-6">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Safety Intelligence v3.5.2</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Safety Intelligence v3.5.2</span>
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span className="text-[9px] font-medium text-slate-500 uppercase tracking-widest">Atualização em Tempo Real Ativa</span>
+            <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Atualização em Tempo Real Ativa</span>
           </div>
         </div>
-        <div className="text-[10px] text-slate-400 font-medium tracking-tight">
+        <div className="text-[10px] text-slate-400 font-bold tracking-tight uppercase tracking-widest">
           SISTEMA DE SUPORTE À DECISÃO ESTRATÉGICA &copy; 2025
         </div>
       </footer>
@@ -153,12 +126,12 @@ const App: React.FC = () => {
   );
 };
 
-const MetricBlock: React.FC<{ label: string; value: string | number; sub: string; highlight?: boolean }> = ({ label, value, sub, highlight }) => (
-  <div className="flex flex-col">
-    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</span>
-    <div className="flex items-baseline gap-2">
-      <span className={`text-2xl font-bold tracking-tighter tabular-nums ${highlight ? 'text-indigo-600' : 'text-slate-900'}`}>{value}</span>
-      <span className="text-[10px] font-medium text-slate-400 whitespace-nowrap">{sub}</span>
+const HeaderMetric: React.FC<{ label: string; value: string | number; sub: string; highlight?: boolean }> = ({ label, value, sub, highlight }) => (
+  <div className="flex flex-col items-start min-w-[80px]">
+    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-0.5">{label}</span>
+    <div className="flex items-baseline gap-1.5">
+      <span className={`text-xl font-bold tracking-tighter tabular-nums ${highlight ? 'text-indigo-600' : 'text-slate-900'}`}>{value}</span>
+      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">{sub}</span>
     </div>
   </div>
 );
@@ -166,10 +139,10 @@ const MetricBlock: React.FC<{ label: string; value: string | number; sub: string
 const NavBtn: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => (
   <button
     onClick={onClick}
-    className={`px-6 py-2 rounded-lg text-xs font-bold tracking-tight ${
+    className={`px-4 py-1.5 rounded-lg text-[11px] font-bold tracking-tight transition-all ${
       active 
-        ? 'bg-white text-indigo-600 shadow-sm' 
-        : 'text-slate-500'
+        ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-black/5' 
+        : 'text-slate-500 hover:text-slate-700'
     }`}
   >
     {label}
