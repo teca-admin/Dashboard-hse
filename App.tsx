@@ -111,7 +111,7 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className="text-[10px] text-slate-400 font-bold tracking-tight uppercase tracking-widest">
-          SISTEMA DE SUPORTE À DECISÃO ESTRATÉGICA &copy; 2025
+          SISTEMA DE SUPORTE À DECISÃO ESTRATÉGICA &copy; 2026
         </div>
       </footer>
     </div>

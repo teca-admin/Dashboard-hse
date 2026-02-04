@@ -30,9 +30,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
       });
     };
 
-    // Dados para os rankings (usam todos os filtros ativos)
-    const dataForAll = getFilteredData();
-
     // Função para calcular médias dos turnos respeitando os outros filtros
     const getTurnoAverage = (turnoPattern: string) => {
       const source = getFilteredData('turno');
@@ -96,16 +93,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
           <div className="flex-1 bg-slate-50 rounded-2xl"></div>
         </div>
         <div className="col-span-4 flex flex-col gap-6">
-          <div className="flex-1 bg-slate-50 rounded-2xl"></div>
-          <div className="flex-1 bg-slate-50 rounded-2xl"></div>
+          <div className="flex-[7] bg-slate-50 rounded-2xl"></div>
+          <div className="flex-[3] bg-slate-50 rounded-2xl"></div>
         </div>
       </div>
     );
   }
 
   if (!analytics) return null;
-
-  const isAnyFilterActive = selectedTurno || selectedDominio || selectedSetor || selectedFuncao;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full min-h-0 overflow-hidden pb-1">
@@ -162,9 +157,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
         </div>
       </div>
 
-      {/* Coluna Lateral */}
+      {/* Coluna Lateral - Configurada para 70% / 30% de ocupação */}
       <div className="lg:col-span-4 flex flex-col gap-5 h-full min-h-0">
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-[7] min-h-0 overflow-hidden">
           <ListCard 
             title="Média Setorial" 
             items={analytics.setores} 
@@ -174,7 +169,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
           />
         </div>
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-[3] min-h-0 overflow-hidden">
           <ListCard 
             title="Média Funcional" 
             items={analytics.funcoes} 
