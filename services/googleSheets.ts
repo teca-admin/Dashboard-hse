@@ -7,39 +7,34 @@ const RANGE = 'I:T';
 
 export async function fetchSpreadsheetData(): Promise<SheetRow[]> {
   /**
-   * Resolvemos o erro 'API key not valid' migrando para o endpoint GViz.
-   * Este endpoint permite leitura de planilhas compartilhadas (Anyone with the link can view)
-   * sem a necessidade de uma API Key do Google Cloud vinculada ao serviço de Sheets,
-   * o que evita conflitos com a chave process.env.API_KEY (geralmente destinada ao Gemini).
+   * Utilizamos o endpoint GViz para extração de dados.
+   * Para evitar erros de "Failed to fetch" (CORS/Network):
+   * 1. A planilha DEVE estar configurada como "Qualquer pessoa com o link pode ler".
+   * 2. Removemos headers customizados para manter a requisição como "Simple Request", evitando preflight do CORS.
    */
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&range=${RANGE}`;
 
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-      cache: 'no-store'
-    });
+    // Requisição simplificada sem cabeçalhos customizados para maximizar compatibilidade CORS
+    const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Erro de conexão (${response.status}): Não foi possível acessar o servidor de documentos.`);
+      throw new Error(`Servidor retornou status ${response.status}. Verifique se a planilha é pública.`);
     }
 
     const text = await response.text();
     
-    // O GViz retorna um formato JSONP-like que precisa de limpeza
+    // O GViz retorna um formato JSONP que começa com google.visualization.Query.setResponse(...)
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\)/);
     if (!match) {
-      throw new Error("Formato de resposta inválido recebido da planilha.");
+      throw new Error("Formato de resposta inesperado da planilha. Verifique as permissões de acesso.");
     }
 
     const json = JSON.parse(match[1]);
     
     if (json.status === 'error') {
-      const errorMsg = json.errors?.[0]?.detailed_message || "Erro interno na consulta da planilha.";
-      throw new Error(`Erro Google Sheets: ${errorMsg}`);
+      const errorMsg = json.errors?.[0]?.detailed_message || "Erro na consulta dos dados.";
+      throw new Error(`Google Sheets: ${errorMsg}`);
     }
 
     const table = json.table;
@@ -49,8 +44,7 @@ export async function fetchSpreadsheetData(): Promise<SheetRow[]> {
 
     /**
      * Mapeamento dos dados do GViz:
-     * No GViz, cada linha tem uma propriedade 'c' que é um array de objetos de célula {v: valor, f: formatado}
-     * Mapeamos as colunas I:T (0 a 11):
+     * Colunas I:T (Mapeadas como índices 0 a 11 na consulta)
      * index 0: ID
      * index 1: Timestamp
      * index 2: Setor
@@ -64,7 +58,7 @@ export async function fetchSpreadsheetData(): Promise<SheetRow[]> {
      */
     return table.rows.slice(1).map((row: any) => {
       const cells = row.c;
-      const getVal = (idx: number) => (cells[idx] ? cells[idx].v : '');
+      const getVal = (idx: number) => (cells[idx] && cells[idx].v !== null ? cells[idx].v : '');
       
       return {
         id: String(getVal(0) || ''),
@@ -76,14 +70,15 @@ export async function fetchSpreadsheetData(): Promise<SheetRow[]> {
         dominios: String(getVal(7) || ''),
         itens: String(getVal(8) || ''),
         resposta: String(getVal(9) || ''),
-        peso: String(getVal(11) || ''),
+        peso: String(getVal(11) || '0'),
       };
     });
   } catch (error: any) {
-    console.error("Erro na extração de dados (GViz):", error);
+    console.error("Erro Crítico no Fetch:", error);
     
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error("Falha de rede ou CORS: Verifique se a planilha está compartilhada publicamente (Qualquer pessoa com o link pode visualizar).");
+    // Tratamento específico para o erro comum de CORS ou falta de compartilhamento público
+    if (error.name === 'TypeError' || error.message.includes('fetch')) {
+      throw new Error("Acesso Negado: Certifique-se de que a planilha está compartilhada com 'Qualquer pessoa com o link pode ver'.");
     }
     
     throw error;
