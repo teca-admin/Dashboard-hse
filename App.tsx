@@ -22,7 +22,7 @@ const App: React.FC = () => {
     
     try {
       const data = await fetchSpreadsheetData();
-      setState(prev => ({ ...prev, data, loading: false }));
+      setState(prev => ({ ...prev, data, loading: false, error: null }));
     } catch (err: any) {
       setState(prev => ({ 
         ...prev, 
@@ -45,7 +45,10 @@ const App: React.FC = () => {
 
   const metrics = useMemo(() => {
     const sectors = new Set(filteredData.map(r => r.setor));
-    const totalWeight = filteredData.reduce((acc, curr) => acc + (parseFloat(curr.peso.replace(',', '.')) || 0), 0);
+    const totalWeight = filteredData.reduce((acc, curr) => {
+      const val = parseFloat(curr.peso.replace(',', '.')) || 0;
+      return acc + val;
+    }, 0);
     const positiveCount = filteredData.filter(r => r.resposta.toLowerCase() === 'sim').length;
     
     return {
@@ -96,9 +99,29 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Analytical Space - Larger due to header optimization */}
+      {/* Main Analytical Space */}
       <main className="w-full max-w-[1700px] mx-auto flex-grow min-h-0 overflow-hidden">
-        {activeTab === 'dados' ? (
+        {state.error ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="bg-rose-50 border border-rose-200 p-8 rounded-2xl max-w-lg text-center shadow-sm animate-in fade-in zoom-in duration-300">
+              <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-slate-900 font-bold text-lg mb-2 uppercase tracking-wider">Falha na Sincronização</h3>
+              <p className="text-slate-600 text-sm leading-relaxed mb-8">
+                {state.error}
+              </p>
+              <button 
+                onClick={() => loadData()}
+                className="px-8 py-2.5 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
+              >
+                Tentar Novamente
+              </button>
+            </div>
+          </div>
+        ) : activeTab === 'dados' ? (
           <div className="h-full">
             <DataTable data={filteredData} loading={state.loading} />
           </div>
