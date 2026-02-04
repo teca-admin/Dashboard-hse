@@ -53,37 +53,40 @@ const App: React.FC = () => {
   }, [filteredData]);
 
   return (
-    <div className="h-screen bg-[#f8fafc] flex flex-col p-2 lg:px-4 lg:py-3 overflow-hidden">
-      {/* Header Compacto e Técnico */}
-      <header className="w-full max-w-[1600px] mx-auto mb-3 shrink-0">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-slate-900 flex items-center justify-center rounded-sm shadow-md border border-slate-700">
-              <span className="text-white font-bold text-sm tracking-tighter">SIA</span>
+    <div className="h-screen bg-white flex flex-col p-4 lg:px-8 lg:py-6 overflow-hidden">
+      {/* Executive Header */}
+      <header className="w-full max-w-[1700px] mx-auto mb-6 shrink-0">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-slate-100 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-12 h-12 bg-slate-900 flex items-center justify-center rounded-xl shadow-xl shadow-slate-200">
+              <span className="text-white font-bold text-xl tracking-tighter">S</span>
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[8px] font-semibold text-blue-600 uppercase tracking-[0.25em]">INTELLIGENCE UNIT</span>
-                <span className="px-1.5 py-0 bg-emerald-500 text-white text-[7px] font-bold rounded-sm uppercase tracking-widest">Ativo</span>
+              <div className="flex items-center gap-3 mb-1">
+                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.3em]">HSE Strategic Intelligence</span>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">
+                  <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest">Live System</span>
+                </div>
               </div>
-              <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none uppercase">
-                Monitoramento Estratégico
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight leading-none">
+                Gestão de Segurança do Trabalho
               </h1>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="relative group">
+          <div className="flex items-center gap-4">
+            <div className="relative">
               <input 
                 type="text"
-                placeholder="FILTRAR DATASET..."
-                className="h-8 w-48 pl-8 pr-3 bg-white border border-slate-300 rounded-sm text-[8px] font-semibold uppercase tracking-wider focus:outline-none focus:border-blue-600 shadow-sm transition-all"
+                placeholder="Pesquisar inteligência..."
+                className="h-10 w-64 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                 value={state.searchTerm}
                 onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
               />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-3.5 w-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
             </div>
@@ -91,79 +94,78 @@ const App: React.FC = () => {
             <button 
               onClick={loadData}
               disabled={state.loading}
-              className="h-8 px-4 bg-blue-600 text-white rounded-sm text-[8px] font-bold uppercase tracking-widest hover:bg-blue-700 disabled:opacity-30 flex items-center gap-2 shadow-lg shadow-blue-500/10 transition-all active:scale-95"
+              className="h-10 px-6 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 flex items-center gap-3 transition-all active:scale-95 shadow-lg shadow-slate-200"
             >
-              <svg className={`w-3.5 h-3.5 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              {state.loading ? 'Atualizando...' : 'Sincronizar'}
+              <svg className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              SINCRONIZAR
             </button>
           </div>
         </div>
 
-        {/* InfoBar de Métricas */}
-        <div className="w-full bg-white rounded-sm p-2 flex items-center justify-between shadow-md border border-slate-200 mb-2 shrink-0 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-600"></div>
-          <div className="flex gap-10 pl-4">
-            <MetricBlock label="Registros" value={filteredData.length} />
-            <MetricBlock label="Unidades" value={metrics.uniqueSectors} />
-            <MetricBlock label="Carga" value={metrics.totalWeight} />
-            <MetricBlock label="Índice Conf." value={`${metrics.positiveRate}%`} />
+        {/* Corporate KPI Bar */}
+        <div className="w-full flex items-center justify-between mt-6 shrink-0">
+          <div className="flex gap-12">
+            <MetricBlock label="Volume de Amostragem" value={filteredData.length} sub="Registros Totais" />
+            <MetricBlock label="Abrangência Setorial" value={metrics.uniqueSectors} sub="Unidades Ativas" />
+            <MetricBlock label="Impacto Acumulado" value={metrics.totalWeight} sub="Carga de Trabalho" />
+            <MetricBlock label="Conformidade Geral" value={`${metrics.positiveRate}%`} sub="Índice de Segurança" highlight />
           </div>
           
-          <div className="flex items-center gap-2 pr-1">
-            <nav className="flex bg-slate-100 p-0.5 rounded-sm">
-              <NavBtn active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Dashboard" />
-              <NavBtn active={activeTab === 'dados'} onClick={() => setActiveTab('dados')} label="Dados" />
-            </nav>
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <NavBtn active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Visão Analítica" />
+            <NavBtn active={activeTab === 'dados'} onClick={() => setActiveTab('dados')} label="Dataset Detalhado" />
           </div>
         </div>
       </header>
 
-      {/* Main Content Area - Ocupa todo o espaço restante */}
-      <main className="w-full max-w-[1600px] mx-auto flex-grow min-h-0 overflow-hidden">
+      {/* Main Analytical Space */}
+      <main className="w-full max-w-[1700px] mx-auto flex-grow min-h-0 overflow-hidden">
         {activeTab === 'dados' ? (
-          <div className="h-full animate-in fade-in duration-150 ease-out">
+          <div className="h-full">
             <DataTable data={filteredData} loading={state.loading} />
           </div>
         ) : (
-          <div className="h-full animate-in fade-in duration-150 ease-out">
+          <div className="h-full">
             <DashboardView data={state.data} loading={state.loading} />
           </div>
         )}
       </main>
 
-      {/* Footer Minimalista */}
-      <footer className="w-full max-w-[1600px] mx-auto mt-2 flex justify-between items-center shrink-0 px-1 pt-2 border-t border-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-none bg-emerald-500"></div>
-            <span className="text-[8px] font-semibold text-slate-500 uppercase tracking-widest">SIA ENGINE v3.5.2</span>
+      {/* Footer Profissional */}
+      <footer className="w-full max-w-[1700px] mx-auto mt-6 flex justify-between items-center shrink-0 px-2 pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-6">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Safety Intelligence v3.5.2</span>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span className="text-[9px] font-medium text-slate-500 uppercase tracking-widest">Servidor Operacional: Cluster-Alpha</span>
           </div>
-          <span className="text-slate-300 text-xs">|</span>
-          <span className="text-[8px] font-medium text-slate-400 uppercase tracking-[0.2em]">OP: #1092-A</span>
         </div>
-        <p className="text-[8px] text-slate-400 font-semibold uppercase tracking-[0.2em]">
-          UBUNTU ANALYTICS &copy; 2025
-        </p>
+        <div className="text-[10px] text-slate-400 font-medium tracking-tight">
+          SISTEMA DE SUPORTE À DECISÃO ESTRATÉGICA &copy; 2025
+        </div>
       </footer>
     </div>
   );
 };
 
-const MetricBlock: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
-  <div className="flex flex-col gap-0">
-    <span className="text-[7px] font-semibold text-slate-400 uppercase tracking-[0.2em]">{label}</span>
-    <span className="text-sm font-bold text-slate-900 tracking-tight tabular-nums font-mono">{value}</span>
+const MetricBlock: React.FC<{ label: string; value: string | number; sub: string; highlight?: boolean }> = ({ label, value, sub, highlight }) => (
+  <div className="flex flex-col">
+    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">{label}</span>
+    <div className="flex items-baseline gap-2">
+      <span className={`text-2xl font-bold tracking-tighter tabular-nums ${highlight ? 'text-indigo-600' : 'text-slate-900'}`}>{value}</span>
+      <span className="text-[10px] font-medium text-slate-400 whitespace-nowrap">{sub}</span>
+    </div>
   </div>
 );
 
 const NavBtn: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 rounded-sm text-[8px] font-bold uppercase tracking-widest transition-all ${
+    className={`px-6 py-2 rounded-lg text-xs font-bold tracking-tight transition-all duration-200 ${
       active 
-        ? 'bg-white text-blue-600 shadow-sm' 
+        ? 'bg-white text-indigo-600 shadow-sm' 
         : 'text-slate-500 hover:text-slate-800'
     }`}
   >

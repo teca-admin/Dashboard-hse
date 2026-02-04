@@ -25,11 +25,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
     const turno1 = data.filter(r => r.turno.includes('1')).length;
     const turno2 = data.filter(r => r.turno.includes('2')).length;
     const turno3 = data.filter(r => r.turno.includes('3')).length;
+    const turnoComercial = data.filter(r => r.turno.toUpperCase().includes('COMERCIAL')).length;
 
     return {
       turno1,
       turno2,
       turno3,
+      turnoComercial,
       dominios: getCountMap('dominios'),
       setores: getCountMap('setor'),
       funcoes: getCountMap('funcao'),
@@ -39,14 +41,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-12 gap-3 h-full animate-pulse">
-        <div className="col-span-8 flex flex-col gap-3">
-          <div className="grid grid-cols-3 gap-3 h-20 bg-slate-100 rounded-sm"></div>
-          <div className="flex-1 bg-slate-100 rounded-sm"></div>
+      <div className="grid grid-cols-12 gap-6 h-full animate-pulse">
+        <div className="col-span-8 flex flex-col gap-6">
+          <div className="grid grid-cols-4 gap-6 h-32 bg-slate-50 rounded-2xl"></div>
+          <div className="flex-1 bg-slate-50 rounded-2xl"></div>
         </div>
-        <div className="col-span-4 flex flex-col gap-3">
-          <div className="flex-1 bg-slate-100 rounded-sm"></div>
-          <div className="flex-1 bg-slate-100 rounded-sm"></div>
+        <div className="col-span-4 flex flex-col gap-6">
+          <div className="flex-1 bg-slate-50 rounded-2xl"></div>
+          <div className="flex-1 bg-slate-50 rounded-2xl"></div>
         </div>
       </div>
     );
@@ -55,45 +57,46 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   if (!analytics) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full min-h-0 overflow-hidden pb-1">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0 overflow-hidden pb-2">
       
-      {/* Bloco Esquerdo: Turnos e Domínio */}
-      <div className="lg:col-span-8 flex flex-col gap-3 h-full min-h-0">
+      {/* Coluna Principal: Turnos e Performance por Domínio */}
+      <div className="lg:col-span-8 flex flex-col gap-6 h-full min-h-0">
         
-        {/* Row superior: 3 Turnos */}
-        <div className="grid grid-cols-3 gap-3 h-24 shrink-0">
-          <TurnoCard label="MATUTINO" sub="Turno 01" count={analytics.turno1} color="from-blue-700 to-blue-900" />
-          <TurnoCard label="VESPERTINO" sub="Turno 02" count={analytics.turno2} color="from-indigo-700 to-indigo-900" />
-          <TurnoCard label="NOTURNO" sub="Turno 03" count={analytics.turno3} color="from-slate-800 to-slate-950" />
+        {/* Indicadores de Turno Profissionais - Atualizado para 4 Colunas */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 h-auto lg:h-32 shrink-0">
+          <TurnoCard label="Equipe Matutina" sub="Operação Turno 01" count={analytics.turno1} color="indigo" />
+          <TurnoCard label="Equipe Vespertina" sub="Operação Turno 02" count={analytics.turno2} color="slate" />
+          <TurnoCard label="Equipe Noturna" sub="Operação Turno 03" count={analytics.turno3} color="zinc" />
+          <TurnoCard label="Equipe Comercial" sub="Administrativo / Apoio" count={analytics.turnoComercial} color="emerald" />
         </div>
 
-        {/* Card Dominio - Ocupa o restante da altura da coluna esquerda */}
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <ListCard 
-            title="Distribuição por Domínio" 
+        {/* Gráfico de Barras Verticais de Domínios */}
+        <div className="flex-1 min-h-0">
+          <VerticalBarCard 
+            title="Performance por Domínio de Segurança" 
             items={analytics.dominios} 
-            barColor="bg-blue-600"
-            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />}
+            barColor="bg-indigo-500"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
           />
         </div>
       </div>
 
-      {/* Bloco Direito: Setor e Função */}
-      <div className="lg:col-span-4 flex flex-col gap-3 h-full min-h-0">
+      {/* Coluna Lateral: Contexto Operacional */}
+      <div className="lg:col-span-4 flex flex-col gap-6 h-full min-h-0">
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
-            title="Setores Ativos" 
+            title="Distribuição Setorial" 
             items={analytics.setores} 
-            barColor="bg-emerald-600"
+            barColor="bg-emerald-500"
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
           />
         </div>
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
-            title="Funções Operacionais" 
+            title="Hierarquia de Funções" 
             items={analytics.funcoes} 
-            barColor="bg-indigo-600"
-            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />}
+            barColor="bg-indigo-400"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
           />
         </div>
       </div>
@@ -102,21 +105,32 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   );
 };
 
-const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: string }> = ({ label, sub, count, color }) => (
-  <div className={`bg-gradient-to-br ${color} p-4 rounded-sm shadow-md border border-white/5 flex flex-col justify-between relative overflow-hidden group transition-all hover:scale-[1.01]`}>
-    <div className="absolute -right-2 -top-2 w-12 h-12 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
-    <div>
-      <h4 className="text-[8px] font-bold text-white/40 uppercase tracking-[0.25em]">{sub}</h4>
-      <p className="text-[10px] font-semibold text-white tracking-widest">{label}</p>
+const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'indigo' | 'slate' | 'zinc' | 'emerald' }> = ({ label, sub, count, color }) => {
+  const colorStyles = {
+    indigo: 'bg-indigo-600 shadow-indigo-200',
+    slate: 'bg-slate-800 shadow-slate-200',
+    zinc: 'bg-zinc-700 shadow-zinc-200',
+    emerald: 'bg-emerald-600 shadow-emerald-200'
+  };
+
+  return (
+    <div className={`${colorStyles[color]} p-6 rounded-2xl shadow-xl border border-white/10 flex flex-col justify-between relative overflow-hidden group transition-all hover:-translate-y-1`}>
+      <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+      <div>
+        <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">{sub}</h4>
+        <p className="text-sm font-semibold text-white tracking-tight">{label}</p>
+      </div>
+      <div className="flex items-end justify-between">
+        <span className="text-4xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
+          {count}
+        </span>
+        <div className="flex items-center gap-2 mb-1.5 opacity-60">
+          <span className="text-[9px] font-bold text-white uppercase tracking-widest border-l border-white/20 pl-2">Análises</span>
+        </div>
+      </div>
     </div>
-    <div className="flex items-end justify-between">
-      <span className="text-3xl font-bold text-white tracking-tighter tabular-nums drop-shadow-sm font-mono">
-        {count}
-      </span>
-      <span className="text-[7px] font-semibold text-white/30 uppercase tracking-widest border-l border-white/10 pl-2 mb-1">UNIDADES</span>
-    </div>
-  </div>
-);
+  );
+};
 
 interface ListCardProps {
   title: string;
@@ -126,57 +140,107 @@ interface ListCardProps {
 }
 
 const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
-  <div className="bg-white rounded-sm border border-slate-200 shadow-lg flex flex-col h-full overflow-hidden">
-    <div className="px-4 py-2.5 border-b border-slate-100 flex justify-between items-center bg-slate-50/40 shrink-0">
-      <div className="flex items-center gap-2.5">
-        <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {icon}
-        </svg>
-        <h3 className="text-[9px] font-bold text-slate-800 uppercase tracking-[0.2em]">{title}</h3>
+  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="px-6 py-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/30 shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="p-1.5 bg-slate-100 rounded-lg text-slate-500">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {icon}
+          </svg>
+        </div>
+        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">{title}</h3>
       </div>
-      <div className="px-1.5 py-0.5 bg-slate-100 rounded-sm text-[7px] font-mono font-semibold text-slate-400 border border-slate-200 uppercase tracking-widest">
-        DATASET_INDEX
-      </div>
+      <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Dataset</span>
     </div>
     
-    <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-3 space-y-4">
+    <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-5">
       {items.length > 0 ? items.map((item, idx) => (
-        <div key={item.label} className="group relative">
-          <div className="flex justify-between items-center mb-1">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <span className="text-[8px] font-mono font-semibold text-slate-300">{(idx + 1).toString().padStart(2, '0')}</span>
-              <span className="text-[9px] font-bold text-slate-600 uppercase truncate tracking-tight" title={item.label}>
+        <div key={item.label} className="group">
+          <div className="flex justify-between items-end mb-1.5">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <span className="text-[10px] font-bold text-slate-200">{ (idx + 1).toString().padStart(2, '0') }</span>
+              <span className="text-xs font-semibold text-slate-600 truncate tracking-tight group-hover:text-slate-900 transition-colors" title={item.label}>
                 {item.label}
               </span>
             </div>
-            <div className="flex items-center gap-2.5 shrink-0">
-              <span className="text-[10px] font-bold text-slate-900 tabular-nums font-mono">{item.count}</span>
-              <span className="text-[7px] font-semibold text-slate-400 bg-slate-50 px-1 py-0.5 rounded-sm border border-slate-100">{item.percentage.toFixed(0)}%</span>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-sm font-bold text-slate-900 tabular-nums">{item.count}</span>
+              <span className="text-[9px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{item.percentage.toFixed(0)}%</span>
             </div>
           </div>
-          <div className="h-1 w-full bg-slate-100 rounded-none overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className={`h-full ${barColor} transition-all duration-700 ease-out relative group-hover:brightness-105`}
+              className={`h-full ${barColor} rounded-full transition-all duration-1000 ease-out`}
               style={{ width: `${item.percentage}%` }}
-            >
-              <div className="absolute top-0 right-0 h-full w-2 bg-white/20 blur-sm"></div>
+            ></div>
+          </div>
+        </div>
+      )) : (
+        <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
+          Nenhum dado processado
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
+  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="px-6 py-5 border-b border-slate-50 flex justify-between items-center shrink-0">
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {icon}
+          </svg>
+        </div>
+        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{title}</h3>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Feed</span>
+      </div>
+    </div>
+    
+    <div className="flex-1 px-8 py-8 flex items-end justify-around gap-6 overflow-hidden">
+      {items.length > 0 ? items.map((item) => (
+        <div key={item.label} className="flex-1 flex flex-col items-center group h-full justify-end max-w-[80px]">
+          <div className="relative flex-1 w-full flex flex-col justify-end">
+             {/* Value Tooltip above bar */}
+             <div className="text-center mb-2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+               <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">{item.count}</span>
+             </div>
+             
+             {/* Styled Vertical Bar */}
+             <div 
+               className={`w-full ${barColor} rounded-t-xl transition-all duration-1000 ease-out group-hover:brightness-110 shadow-lg shadow-indigo-100 relative overflow-hidden`}
+               style={{ height: `${item.percentage}%`, minHeight: '8px' }}
+             >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-white/20"></div>
+             </div>
+          </div>
+          
+          {/* Executive Label below bar */}
+          <div className="mt-4 w-full flex flex-col items-center">
+            <div className="h-[40px] flex items-start justify-center text-center">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-tight line-clamp-2" title={item.label}>
+                  {item.label}
+                </span>
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 border-t border-slate-50 pt-1 w-full justify-center">
+               <span className="text-[10px] font-bold text-slate-900 tabular-nums">{item.percentage.toFixed(0)}%</span>
             </div>
           </div>
         </div>
       )) : (
-        <div className="h-full flex items-center justify-center text-[8px] font-semibold text-slate-300 uppercase tracking-widest">
-          Sem Dados de Processamento
+        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+          Aguardando processamento analítico
         </div>
       )}
     </div>
     
-    <div className="px-4 py-1.5 bg-slate-900 flex justify-between items-center shrink-0 mt-auto">
-      <span className="text-[7px] font-bold text-white/30 uppercase tracking-[0.3em]">INTELLIGENCE UNIT v3.5</span>
-      <div className="flex gap-1.5">
-        <div className="w-1 h-1 bg-blue-500 rounded-none animate-pulse"></div>
-        <div className="w-1 h-1 bg-emerald-500 rounded-none animate-pulse delay-75"></div>
-        <div className="w-1 h-1 bg-amber-500 rounded-none animate-pulse delay-150"></div>
-      </div>
+    <div className="px-6 py-3 bg-slate-50/50 flex justify-center items-center border-t border-slate-50">
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em]">Visualização Estratégica Executiva</span>
     </div>
   </div>
 );
