@@ -11,30 +11,53 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   const analytics = useMemo(() => {
     if (data.length === 0) return null;
 
-    const getCountMap = (key: keyof SheetRow) => {
-      const map: Record<string, number> = {};
+    const parsePeso = (p: string) => parseFloat(p.replace(',', '.')) || 0;
+
+    const getAverageMap = (key: keyof SheetRow) => {
+      const sumMap: Record<string, number> = {};
+      const countMap: Record<string, number> = {};
+      
       data.forEach(row => {
-        const val = row[key] || 'N/D';
-        map[val] = (map[val] || 0) + 1;
+        const category = row[key] || 'N/D';
+        const pesoVal = parsePeso(row.peso);
+        sumMap[category] = (sumMap[category] || 0) + pesoVal;
+        countMap[category] = (countMap[category] || 0) + 1;
       });
-      return Object.entries(map)
-        .map(([label, count]) => ({ label, count, percentage: (count / data.length) * 100 }))
+
+      const entries = Object.entries(sumMap).map(([label, sum]) => {
+        const count = countMap[label];
+        const average = count > 0 ? sum / count : 0;
+        return { label, average };
+      });
+
+      // Encontra a maior média para escalar as barras proporcionalmente
+      const maxAverage = Math.max(...entries.map(e => e.average), 0.01);
+
+      return entries
+        .map(({ label, average }) => ({
+          label,
+          count: average, // Reutilizando a prop 'count' do componente original para a Média
+          displayValue: average.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          percentage: (average / maxAverage) * 100
+        }))
         .sort((a, b) => b.count - a.count);
     };
 
-    const turno1 = data.filter(r => r.turno.includes('1')).length;
-    const turno2 = data.filter(r => r.turno.includes('2')).length;
-    const turno3 = data.filter(r => r.turno.includes('3')).length;
-    const turnoComercial = data.filter(r => r.turno.toUpperCase().includes('COMERCIAL')).length;
+    const getTurnoAverage = (turnoPattern: string) => {
+      const filtered = data.filter(r => r.turno.toUpperCase().includes(turnoPattern.toUpperCase()));
+      if (filtered.length === 0) return 0;
+      const sum = filtered.reduce((acc, curr) => acc + parsePeso(curr.peso), 0);
+      return sum / filtered.length;
+    };
 
     return {
-      turno1,
-      turno2,
-      turno3,
-      turnoComercial,
-      dominios: getCountMap('dominios'),
-      setores: getCountMap('setor'),
-      funcoes: getCountMap('funcao'),
+      turno1: getTurnoAverage('1'),
+      turno2: getTurnoAverage('2'),
+      turno3: getTurnoAverage('3'),
+      turnoComercial: getTurnoAverage('COMERCIAL'),
+      dominios: getAverageMap('dominios'),
+      setores: getAverageMap('setor'),
+      funcoes: getAverageMap('funcao'),
       total: data.length
     };
   }, [data]);
@@ -59,21 +82,21 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full min-h-0 overflow-hidden pb-1">
       
-      {/* Coluna Principal: Turnos e Performance por Domínio */}
+      {/* Coluna Principal: Médias por Turno e Performance por Domínio */}
       <div className="lg:col-span-8 flex flex-col gap-5 h-full min-h-0">
         
-        {/* Indicadores de Turno Profissionais */}
+        {/* Indicadores de Média de Carga por Turno */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 h-auto lg:h-28 shrink-0">
-          <TurnoCard label="Equipe Matutina" sub="Turno 01" count={analytics.turno1} color="indigo" />
-          <TurnoCard label="Equipe Vespertina" sub="Turno 02" count={analytics.turno2} color="slate" />
-          <TurnoCard label="Equipe Noturna" sub="Turno 03" count={analytics.turno3} color="zinc" />
-          <TurnoCard label="Equipe Comercial" sub="Comercial" count={analytics.turnoComercial} color="emerald" />
+          <TurnoCard label="Equipe Matutina" sub="Média Turno 01" count={analytics.turno1} color="indigo" />
+          <TurnoCard label="Equipe Vespertina" sub="Média Turno 02" count={analytics.turno2} color="slate" />
+          <TurnoCard label="Equipe Noturna" sub="Média Turno 03" count={analytics.turno3} color="zinc" />
+          <TurnoCard label="Equipe Comercial" sub="Média Comercial" count={analytics.turnoComercial} color="emerald" />
         </div>
 
-        {/* Gráfico de Barras Verticais de Domínios */}
+        {/* Gráfico de Médias por Domínio */}
         <div className="flex-1 min-h-0">
           <VerticalBarCard 
-            title="Performance por Domínio de Segurança" 
+            title="Média de Carga por Domínio de Segurança" 
             items={analytics.dominios} 
             barColor="bg-indigo-500"
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
@@ -81,11 +104,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
         </div>
       </div>
 
-      {/* Coluna Lateral: Contexto Operacional */}
+      {/* Coluna Lateral: Contexto por Média */}
       <div className="lg:col-span-4 flex flex-col gap-5 h-full min-h-0">
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
-            title="Distribuição Setorial" 
+            title="Média por Distribuição Setorial" 
             items={analytics.setores} 
             barColor="bg-emerald-500"
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
@@ -93,7 +116,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
         </div>
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
-            title="Hierarquia de Funções" 
+            title="Média por Hierarquia de Funções" 
             items={analytics.funcoes} 
             barColor="bg-indigo-400"
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
@@ -121,11 +144,11 @@ const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'i
         <p className="text-xs font-bold text-white tracking-tight">{label}</p>
       </div>
       <div className="flex items-end justify-between">
-        <span className="text-3xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
-          {count}
+        <span className="text-2xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
+          {count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
         <div className="flex items-center gap-1.5 mb-1 opacity-80">
-          <span className="text-[8px] font-bold text-white uppercase tracking-widest border-l border-white/30 pl-1.5">Análises</span>
+          <span className="text-[8px] font-bold text-white uppercase tracking-widest border-l border-white/30 pl-1.5">Média Peso</span>
         </div>
       </div>
     </div>
@@ -134,7 +157,7 @@ const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'i
 
 interface ListCardProps {
   title: string;
-  items: { label: string; count: number; percentage: number }[];
+  items: { label: string; count: number; percentage: number; displayValue?: string }[];
   barColor: string;
   icon: React.ReactNode;
 }
@@ -163,8 +186,9 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
               </span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs font-bold text-slate-900 tabular-nums">{item.count}</span>
-              <span className="text-[9px] font-bold text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200">{item.percentage.toFixed(0)}%</span>
+              <span className="text-xs font-bold text-slate-900 tabular-nums">
+                {item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
             </div>
           </div>
           <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -196,7 +220,7 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
       </div>
       <div className="flex items-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Live</span>
+        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Live AVG</span>
       </div>
     </div>
     
@@ -205,7 +229,9 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
         <div key={item.label} className="flex-1 flex flex-col items-center h-full justify-end max-w-[80px]">
           <div className="relative flex-1 w-full flex flex-col justify-end">
              <div className="text-center mb-1">
-               <span className="text-[11px] font-bold text-slate-800 tabular-nums">{item.count}</span>
+               <span className="text-[11px] font-bold text-slate-800 tabular-nums">
+                 {item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+               </span>
              </div>
              
              <div 
@@ -224,7 +250,7 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
                 </span>
             </div>
             <div className="mt-1 flex items-center gap-1.5 border-t border-slate-200 pt-1 w-full justify-center">
-               <span className="text-[11px] font-extrabold text-indigo-700 tabular-nums">{item.percentage.toFixed(0)}%</span>
+               <span className="text-[11px] font-extrabold text-indigo-700 tabular-nums">Média</span>
             </div>
           </div>
         </div>
@@ -236,7 +262,7 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
     </div>
     
     <div className="px-6 py-2.5 bg-slate-50 flex justify-center items-center border-t border-slate-100">
-      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.4em]">Analytics Estratégico Unificado</span>
+      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.4em]">Analytics Estratégico Baseado em Médias</span>
     </div>
   </div>
 );
