@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SheetRow } from '../types';
 
 interface DashboardViewProps {
@@ -8,16 +8,38 @@ interface DashboardViewProps {
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
+  // Estados para controlar os filtros ativos
+  const [selectedTurno, setSelectedTurno] = useState<string | null>(null);
+  const [selectedDominio, setSelectedDominio] = useState<string | null>(null);
+
   const analytics = useMemo(() => {
     if (data.length === 0) return null;
 
     const parsePeso = (p: string) => parseFloat(p.replace(',', '.')) || 0;
 
-    const getAverageMap = (key: keyof SheetRow) => {
+    // Função para calcular médias globais dos turnos (sempre baseada no dataset completo)
+    const getGlobalTurnoAverage = (turnoPattern: string) => {
+      const filtered = data.filter(r => r.turno.toUpperCase().includes(turnoPattern.toUpperCase()));
+      if (filtered.length === 0) return 0;
+      const sum = filtered.reduce((acc, curr) => acc + parsePeso(curr.peso), 0);
+      return sum / filtered.length;
+    };
+
+    // 1. Dados filtrados apenas pelo Turno (para o gráfico de domínios)
+    const dataFilteredByTurno = selectedTurno 
+      ? data.filter(r => r.turno.toUpperCase().includes(selectedTurno.toUpperCase()))
+      : data;
+
+    // 2. Dados filtrados por Turno E Domínio (para as listas laterais)
+    const dataFilteredByBoth = selectedDominio
+      ? dataFilteredByTurno.filter(r => r.dominios === selectedDominio)
+      : dataFilteredByTurno;
+
+    const getAverageMap = (source: SheetRow[], key: keyof SheetRow) => {
       const sumMap: Record<string, number> = {};
       const countMap: Record<string, number> = {};
       
-      data.forEach(row => {
+      source.forEach(row => {
         const category = row[key] || 'N/D';
         const pesoVal = parsePeso(row.peso);
         sumMap[category] = (sumMap[category] || 0) + pesoVal;
@@ -30,37 +52,37 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
         return { label, average };
       });
 
-      // Encontra a maior média para escalar as barras proporcionalmente
       const maxAverage = Math.max(...entries.map(e => e.average), 0.01);
 
       return entries
         .map(({ label, average }) => ({
           label,
-          count: average, // Reutilizando a prop 'count' do componente original para a Média
+          count: average,
           displayValue: average.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
           percentage: (average / maxAverage) * 100
         }))
         .sort((a, b) => b.count - a.count);
     };
 
-    const getTurnoAverage = (turnoPattern: string) => {
-      const filtered = data.filter(r => r.turno.toUpperCase().includes(turnoPattern.toUpperCase()));
-      if (filtered.length === 0) return 0;
-      const sum = filtered.reduce((acc, curr) => acc + parsePeso(curr.peso), 0);
-      return sum / filtered.length;
-    };
-
     return {
-      turno1: getTurnoAverage('1'),
-      turno2: getTurnoAverage('2'),
-      turno3: getTurnoAverage('3'),
-      turnoComercial: getTurnoAverage('COMERCIAL'),
-      dominios: getAverageMap('dominios'),
-      setores: getAverageMap('setor'),
-      funcoes: getAverageMap('funcao'),
+      turno1: getGlobalTurnoAverage('1'),
+      turno2: getGlobalTurnoAverage('2'),
+      turno3: getGlobalTurnoAverage('3'),
+      turnoComercial: getGlobalTurnoAverage('COMERCIAL'),
+      dominios: getAverageMap(dataFilteredByTurno, 'dominios'),
+      setores: getAverageMap(dataFilteredByBoth, 'setor'),
+      funcoes: getAverageMap(dataFilteredByBoth, 'funcao'),
       total: data.length
     };
-  }, [data]);
+  }, [data, selectedTurno, selectedDominio]);
+
+  const handleToggleTurno = (turno: string) => {
+    setSelectedTurno(prev => prev === turno ? null : turno);
+  };
+
+  const handleToggleDominio = (dominio: string) => {
+    setSelectedDominio(prev => prev === dominio ? null : dominio);
+  };
 
   if (loading) {
     return (
@@ -82,33 +104,59 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-full min-h-0 overflow-hidden pb-1">
       
-      {/* Coluna Principal: Médias por Turno e Performance por Domínio */}
+      {/* Coluna Principal */}
       <div className="lg:col-span-8 flex flex-col gap-5 h-full min-h-0">
         
-        {/* Indicadores de Média de Carga por Turno */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 h-auto lg:h-28 shrink-0">
-          <TurnoCard label="Equipe Matutina" sub="Média Turno 01" count={analytics.turno1} color="indigo" />
-          <TurnoCard label="Equipe Vespertina" sub="Média Turno 02" count={analytics.turno2} color="slate" />
-          <TurnoCard label="Equipe Noturna" sub="Média Turno 03" count={analytics.turno3} color="zinc" />
-          <TurnoCard label="Equipe Comercial" sub="Média Comercial" count={analytics.turnoComercial} color="emerald" />
+        {/* Cards de Turno */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 h-auto lg:h-28 shrink-0 p-1">
+          <TurnoCard 
+            label="Equipe Matutina" 
+            sub="Média Turno 01" 
+            count={analytics.turno1} 
+            isActive={selectedTurno === '1'} 
+            onClick={() => handleToggleTurno('1')}
+          />
+          <TurnoCard 
+            label="Equipe Vespertina" 
+            sub="Média Turno 02" 
+            count={analytics.turno2} 
+            isActive={selectedTurno === '2'} 
+            onClick={() => handleToggleTurno('2')}
+          />
+          <TurnoCard 
+            label="Equipe Noturna" 
+            sub="Média Turno 03" 
+            count={analytics.turno3} 
+            isActive={selectedTurno === '3'} 
+            onClick={() => handleToggleTurno('3')}
+          />
+          <TurnoCard 
+            label="Equipe Comercial" 
+            sub="Média Comercial" 
+            count={analytics.turnoComercial} 
+            isActive={selectedTurno === 'COMERCIAL'} 
+            onClick={() => handleToggleTurno('COMERCIAL')}
+          />
         </div>
 
-        {/* Gráfico de Médias por Domínio */}
+        {/* Gráfico de Médias por Domínio - Agora interativo */}
         <div className="flex-1 min-h-0">
           <VerticalBarCard 
-            title="Média de Carga por Domínio de Segurança" 
+            title={`Média de Carga por Domínio ${selectedTurno ? `(Filtro Turno)` : ''}`} 
             items={analytics.dominios} 
             barColor="bg-indigo-500"
+            activeItem={selectedDominio}
+            onItemClick={handleToggleDominio}
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />}
           />
         </div>
       </div>
 
-      {/* Coluna Lateral: Contexto por Média */}
+      {/* Coluna Lateral */}
       <div className="lg:col-span-4 flex flex-col gap-5 h-full min-h-0">
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
-            title="Média por Distribuição Setorial" 
+            title={`Média Setorial ${selectedDominio ? `(${selectedDominio})` : ''}`} 
             items={analytics.setores} 
             barColor="bg-emerald-500"
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />}
@@ -116,7 +164,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
         </div>
         <div className="flex-1 min-h-0 overflow-hidden">
           <ListCard 
-            title="Média por Hierarquia de Funções" 
+            title={`Média Funcional ${selectedDominio ? `(${selectedDominio})` : ''}`} 
             items={analytics.funcoes} 
             barColor="bg-indigo-400"
             icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />}
@@ -128,30 +176,40 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
   );
 };
 
-const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'indigo' | 'slate' | 'zinc' | 'emerald' }> = ({ label, sub, count, color }) => {
-  const colorStyles = {
-    indigo: 'bg-indigo-600 shadow-indigo-200',
-    slate: 'bg-slate-800 shadow-slate-200',
-    zinc: 'bg-zinc-700 shadow-zinc-200',
-    emerald: 'bg-emerald-600 shadow-emerald-200'
-  };
-
+const TurnoCard: React.FC<{ label: string; sub: string; count: number; isActive: boolean; onClick: () => void }> = ({ label, sub, count, isActive, onClick }) => {
   return (
-    <div className={`${colorStyles[color]} p-5 rounded-xl shadow-lg border border-white/10 flex flex-col justify-between relative overflow-hidden`}>
-      <div className="absolute right-0 top-0 w-20 h-20 bg-white/5 rounded-full -mr-10 -mt-10"></div>
+    <button 
+      onClick={onClick}
+      className={`p-5 rounded-xl shadow-lg border transition-all duration-300 flex flex-col justify-between relative overflow-hidden text-left group active:scale-95 ${
+        isActive 
+          ? 'bg-indigo-600 border-indigo-400 ring-2 ring-indigo-300 ring-offset-2' 
+          : 'bg-slate-900 border-white/10 hover:bg-slate-800'
+      }`}
+    >
+      <div className={`absolute right-0 top-0 w-20 h-20 rounded-full -mr-10 -mt-10 transition-colors duration-500 ${
+        isActive ? 'bg-white/10' : 'bg-white/5 group-hover:bg-white/10'
+      }`}></div>
+      
       <div>
-        <h4 className="text-[9px] font-bold text-white/70 uppercase tracking-[0.2em] mb-0.5">{sub}</h4>
+        <h4 className={`text-[9px] font-bold uppercase tracking-[0.2em] mb-0.5 transition-colors ${
+          isActive ? 'text-white/80' : 'text-slate-400 group-hover:text-slate-300'
+        }`}>{sub}</h4>
         <p className="text-xs font-bold text-white tracking-tight">{label}</p>
       </div>
-      <div className="flex items-end justify-between">
-        <span className="text-2xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
+
+      <div className="flex items-end justify-between relative z-10">
+        <span className="text-2xl font-bold text-white tracking-tighter tabular-nums drop-shadow-md">
           {count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
         <div className="flex items-center gap-1.5 mb-1 opacity-80">
-          <span className="text-[8px] font-bold text-white uppercase tracking-widest border-l border-white/30 pl-1.5">Média Peso</span>
+          <span className={`text-[8px] font-bold uppercase tracking-widest border-l pl-1.5 ${
+            isActive ? 'border-white/40 text-white' : 'border-slate-700 text-slate-400'
+          }`}>
+            Média
+          </span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -199,15 +257,25 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
           </div>
         </div>
       )) : (
-        <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">
-          Sem dados
+        <div className="h-full flex items-center justify-center text-center px-8">
+           <div className="flex flex-col items-center">
+              <div className="w-8 h-8 bg-slate-50 rounded-full mb-2 flex items-center justify-center text-slate-300">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight">Nenhum dado sob este filtro</span>
+           </div>
         </div>
       )}
     </div>
   </div>
 );
 
-const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
+interface VerticalBarCardProps extends ListCardProps {
+    onItemClick?: (label: string) => void;
+    activeItem?: string | null;
+}
+
+const VerticalBarCard: React.FC<VerticalBarCardProps> = ({ title, items, barColor, icon, onItemClick, activeItem }) => (
   <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
     <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
       <div className="flex items-center gap-2.5">
@@ -219,44 +287,70 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
         <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-wider">{title}</h3>
       </div>
       <div className="flex items-center gap-1.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Live AVG</span>
+        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Selecione para filtrar</span>
       </div>
     </div>
     
     <div className="flex-1 px-8 py-6 flex items-end justify-around gap-6 overflow-hidden">
-      {items.length > 0 ? items.map((item) => (
-        <div key={item.label} className="flex-1 flex flex-col items-center h-full justify-end max-w-[80px]">
-          <div className="relative flex-1 w-full flex flex-col justify-end">
-             <div className="text-center mb-1">
-               <span className="text-[11px] font-bold text-slate-800 tabular-nums">
-                 {item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-               </span>
-             </div>
-             
-             <div 
-               className={`w-full ${barColor} rounded-t-xl shadow-lg shadow-indigo-100/50 relative overflow-hidden`}
-               style={{ height: `${item.percentage}%`, minHeight: '8px' }}
-             >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent"></div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-white/30"></div>
-             </div>
-          </div>
-          
-          <div className="mt-3 w-full flex flex-col items-center">
-            <div className="h-[36px] flex items-start justify-center text-center">
-                <span className="text-[10px] font-bold text-slate-800 uppercase tracking-tight leading-tight line-clamp-2" title={item.label}>
-                  {item.label}
-                </span>
+      {items.length > 0 ? items.map((item) => {
+        const isActive = activeItem === item.label;
+        const isAnythingActive = activeItem !== null && activeItem !== undefined;
+        
+        return (
+          <button 
+            key={item.label} 
+            onClick={() => onItemClick?.(item.label)}
+            className={`flex-1 flex flex-col items-center h-full justify-end max-w-[80px] animate-in slide-in-from-bottom-2 duration-300 group transition-all outline-none`}
+          >
+            <div className="relative flex-1 w-full flex flex-col justify-end">
+               <div className={`text-center mb-1 transition-all ${isActive ? 'scale-110' : ''}`}>
+                 <span className={`text-[11px] font-bold tabular-nums ${isActive ? 'text-indigo-600' : 'text-slate-800'}`}>
+                   {item.displayValue || item.count.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                 </span>
+               </div>
+               
+               <div 
+                 className={`w-full rounded-t-xl shadow-lg relative overflow-hidden transition-all duration-300 border-2 ${
+                   isActive 
+                    ? 'bg-indigo-600 border-indigo-300 shadow-indigo-200' 
+                    : isAnythingActive 
+                        ? 'bg-slate-200 border-transparent opacity-40 grayscale group-hover:opacity-60 group-hover:grayscale-0'
+                        : `${barColor} border-transparent shadow-indigo-100/50 group-hover:brightness-110`
+                 }`}
+                 style={{ height: `${item.percentage}%`, minHeight: '12px' }}
+               >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent"></div>
+                  <div className={`absolute top-0 left-0 w-full h-1 ${isActive ? 'bg-white/40' : 'bg-white/30'}`}></div>
+               </div>
             </div>
-            <div className="mt-1 flex items-center gap-1.5 border-t border-slate-200 pt-1 w-full justify-center">
-               <span className="text-[11px] font-extrabold text-indigo-700 tabular-nums">Média</span>
+            
+            <div className="mt-3 w-full flex flex-col items-center">
+              <div className="h-[36px] flex items-start justify-center text-center">
+                  <span className={`text-[10px] font-bold uppercase tracking-tight leading-tight line-clamp-2 transition-colors ${
+                    isActive ? 'text-indigo-700' : 'text-slate-800 group-hover:text-indigo-600'
+                  }`} title={item.label}>
+                    {item.label}
+                  </span>
+              </div>
+              <div className={`mt-1 flex items-center gap-1.5 border-t pt-1 w-full justify-center transition-colors ${
+                isActive ? 'border-indigo-300' : 'border-slate-200'
+              }`}>
+                 <span className={`text-[11px] font-extrabold tabular-nums transition-colors ${
+                   isActive ? 'text-indigo-700' : 'text-slate-400 group-hover:text-indigo-500'
+                 }`}>Média</span>
+              </div>
             </div>
-          </div>
-        </div>
-      )) : (
-        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          Processando...
+          </button>
+        );
+      }) : (
+        <div className="w-full h-full flex items-center justify-center text-center">
+           <div className="flex flex-col items-center">
+              <div className="w-12 h-12 bg-slate-50 rounded-full mb-3 flex items-center justify-center text-slate-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] max-w-[200px] leading-relaxed">Não há dados suficientes para gerar este gráfico no filtro selecionado</span>
+           </div>
         </div>
       )}
     </div>

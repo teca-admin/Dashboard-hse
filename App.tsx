@@ -43,21 +43,6 @@ const App: React.FC = () => {
 
   const filteredData = useMemo(() => state.data, [state.data]);
 
-  const metrics = useMemo(() => {
-    const sectors = new Set(filteredData.map(r => r.setor));
-    const totalWeight = filteredData.reduce((acc, curr) => {
-      const val = parseFloat(curr.peso.replace(',', '.')) || 0;
-      return acc + val;
-    }, 0);
-    const positiveCount = filteredData.filter(r => r.resposta.toLowerCase() === 'sim').length;
-    
-    return {
-      uniqueSectors: sectors.size,
-      totalWeight: totalWeight.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-      positiveRate: filteredData.length > 0 ? ((positiveCount / filteredData.length) * 100).toFixed(1) : '0'
-    };
-  }, [filteredData]);
-
   return (
     <div className="h-screen bg-white flex flex-col p-4 lg:px-8 lg:py-4 overflow-hidden">
       {/* Optimized Unified Executive Header */}
@@ -83,13 +68,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Unified KPI Metrics Section */}
-          <div className="flex-1 flex justify-center gap-10">
-            <HeaderMetric label="Amostragem" value={filteredData.length} sub="Registros" />
-            <HeaderMetric label="Abrangência" value={metrics.uniqueSectors} sub="Unidades" />
-            <HeaderMetric label="Impacto" value={metrics.totalWeight} sub="Carga Total" />
-            <HeaderMetric label="Conformidade" value={`${metrics.positiveRate}%`} sub="Índice" highlight />
-          </div>
+          {/* Unified KPI Metrics Section Removida por Solicitação */}
           
           {/* Tab Navigation Controls */}
           <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
@@ -148,16 +127,6 @@ const App: React.FC = () => {
     </div>
   );
 };
-
-const HeaderMetric: React.FC<{ label: string; value: string | number; sub: string; highlight?: boolean }> = ({ label, value, sub, highlight }) => (
-  <div className="flex flex-col items-start min-w-[80px]">
-    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-0.5">{label}</span>
-    <div className="flex items-baseline gap-1.5">
-      <span className={`text-xl font-bold tracking-tighter tabular-nums ${highlight ? 'text-indigo-600' : 'text-slate-900'}`}>{value}</span>
-      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">{sub}</span>
-    </div>
-  </div>
-);
 
 const NavBtn: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => (
   <button
