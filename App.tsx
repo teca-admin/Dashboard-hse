@@ -15,8 +15,12 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'dados' | 'dashboard'>('dashboard');
 
-  const loadData = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+  const loadData = useCallback(async (isBackground = false) => {
+    // Só mostramos o loading (esqueleto) na primeira carga ou se não for background
+    if (!isBackground) {
+      setState(prev => ({ ...prev, loading: true, error: null }));
+    }
+    
     try {
       const data = await fetchSpreadsheetData();
       setState(prev => ({ ...prev, data, loading: false }));
@@ -30,7 +34,15 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Carga inicial
     loadData();
+
+    // Configuração do intervalo para atualização automática (cada 30 segundos)
+    const interval = setInterval(() => {
+      loadData(true); // Atualização silenciosa em background
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [loadData]);
 
   const filteredData = useMemo(() => {
@@ -91,16 +103,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <button 
-              onClick={loadData}
-              disabled={state.loading}
-              className="h-10 px-6 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest disabled:opacity-50 flex items-center gap-3 shadow-lg shadow-slate-200"
-            >
-              {state.loading ? 'Atualizando...' : 'Sincronizar'}
-              <svg className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
+            {/* O botão de sincronização foi removido para priorizar a atualização automática em tempo real */}
           </div>
         </div>
 
@@ -139,7 +142,7 @@ const App: React.FC = () => {
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Safety Intelligence v3.5.2</span>
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span className="text-[9px] font-medium text-slate-500 uppercase tracking-widest">Servidor Operacional: Cluster-Alpha</span>
+            <span className="text-[9px] font-medium text-slate-500 uppercase tracking-widest">Atualização em Tempo Real Ativa</span>
           </div>
         </div>
         <div className="text-[10px] text-slate-400 font-medium tracking-tight">
