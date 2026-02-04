@@ -117,15 +117,15 @@ const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'i
     <div className={`${colorStyles[color]} p-6 rounded-2xl shadow-xl border border-white/10 flex flex-col justify-between relative overflow-hidden`}>
       <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12"></div>
       <div>
-        <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">{sub}</h4>
-        <p className="text-sm font-semibold text-white tracking-tight">{label}</p>
+        <h4 className="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em] mb-1">{sub}</h4>
+        <p className="text-sm font-bold text-white tracking-tight">{label}</p>
       </div>
       <div className="flex items-end justify-between">
         <span className="text-4xl font-bold text-white tracking-tighter tabular-nums drop-shadow-lg">
           {count}
         </span>
-        <div className="flex items-center gap-2 mb-1.5 opacity-60">
-          <span className="text-[9px] font-bold text-white uppercase tracking-widest border-l border-white/20 pl-2">Análises</span>
+        <div className="flex items-center gap-2 mb-1.5 opacity-80">
+          <span className="text-[9px] font-bold text-white uppercase tracking-widest border-l border-white/30 pl-2">Análises</span>
         </div>
       </div>
     </div>
@@ -140,17 +140,17 @@ interface ListCardProps {
 }
 
 const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
-  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full overflow-hidden">
-    <div className="px-6 py-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/30 shrink-0">
+  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
       <div className="flex items-center gap-3">
-        <div className="p-1.5 bg-slate-100 rounded-lg text-slate-500">
+        <div className="p-1.5 bg-slate-200 rounded-lg text-slate-700">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {icon}
           </svg>
         </div>
         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest">{title}</h3>
       </div>
-      <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Dataset</span>
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Dataset</span>
     </div>
     
     <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-5">
@@ -158,17 +158,17 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
         <div key={item.label}>
           <div className="flex justify-between items-end mb-1.5">
             <div className="flex items-center gap-3 overflow-hidden">
-              <span className="text-[10px] font-bold text-slate-200">{ (idx + 1).toString().padStart(2, '0') }</span>
-              <span className="text-xs font-semibold text-slate-600 truncate tracking-tight" title={item.label}>
+              <span className="text-[10px] font-bold text-slate-400">{ (idx + 1).toString().padStart(2, '0') }</span>
+              <span className="text-xs font-bold text-slate-800 truncate tracking-tight" title={item.label}>
                 {item.label}
               </span>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <span className="text-sm font-bold text-slate-900 tabular-nums">{item.count}</span>
-              <span className="text-[9px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{item.percentage.toFixed(0)}%</span>
+              <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">{item.percentage.toFixed(0)}%</span>
             </div>
           </div>
-          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
             <div 
               className={`h-full ${barColor} rounded-full`}
               style={{ width: `${item.percentage}%` }}
@@ -176,7 +176,7 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
           </div>
         </div>
       )) : (
-        <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
+        <div className="h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">
           Nenhum dado processado
         </div>
       )}
@@ -185,19 +185,19 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
 );
 
 const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => (
-  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full overflow-hidden">
-    <div className="px-6 py-5 border-b border-slate-50 flex justify-between items-center shrink-0">
+  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center shrink-0">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+        <div className="p-2 bg-indigo-100 rounded-xl text-indigo-700">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {icon}
           </svg>
         </div>
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{title}</h3>
+        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">{title}</h3>
       </div>
       <div className="flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Feed</span>
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Live Feed</span>
       </div>
     </div>
     
@@ -205,42 +205,42 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
       {items.length > 0 ? items.map((item) => (
         <div key={item.label} className="flex-1 flex flex-col items-center h-full justify-end max-w-[80px]">
           <div className="relative flex-1 w-full flex flex-col justify-end">
-             {/* Static percentage label above bar if needed, or keeping it strictly static as requested */}
+             {/* Valor numérico acima da barra com alto contraste */}
              <div className="text-center mb-1">
-               <span className="text-[10px] font-mono font-bold text-slate-300">{item.count}</span>
+               <span className="text-[11px] font-bold text-slate-800 tabular-nums">{item.count}</span>
              </div>
              
              {/* Styled Vertical Bar */}
              <div 
-               className={`w-full ${barColor} rounded-t-xl shadow-lg shadow-indigo-100 relative overflow-hidden`}
+               className={`w-full ${barColor} rounded-t-xl shadow-lg shadow-indigo-100/50 relative overflow-hidden`}
                style={{ height: `${item.percentage}%`, minHeight: '8px' }}
              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-                <div className="absolute top-0 left-0 w-full h-1 bg-white/20"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-white/30"></div>
              </div>
           </div>
           
-          {/* Executive Label below bar */}
+          {/* Executive Label below bar with improved contrast */}
           <div className="mt-4 w-full flex flex-col items-center">
             <div className="h-[40px] flex items-start justify-center text-center">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tight leading-tight line-clamp-2" title={item.label}>
+                <span className="text-[10px] font-bold text-slate-800 uppercase tracking-tight leading-tight line-clamp-2" title={item.label}>
                   {item.label}
                 </span>
             </div>
-            <div className="mt-1 flex items-center gap-1.5 border-t border-slate-50 pt-1 w-full justify-center">
-               <span className="text-[10px] font-bold text-slate-900 tabular-nums">{item.percentage.toFixed(0)}%</span>
+            <div className="mt-1 flex items-center gap-1.5 border-t border-slate-200 pt-1 w-full justify-center">
+               <span className="text-[11px] font-extrabold text-indigo-700 tabular-nums">{item.percentage.toFixed(0)}%</span>
             </div>
           </div>
         </div>
       )) : (
-        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
           Aguardando processamento analítico
         </div>
       )}
     </div>
     
-    <div className="px-6 py-3 bg-slate-50/50 flex justify-center items-center border-t border-slate-50">
-      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em]">Visualização Estratégica Estrutural</span>
+    <div className="px-6 py-3 bg-slate-50 flex justify-center items-center border-t border-slate-100">
+      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em]">Visualização Estratégica Estrutural</span>
     </div>
   </div>
 );
