@@ -48,13 +48,17 @@
 {
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
+    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client"
   }
 }
 </script>
 </head>
 <body>
     <div id="root"></div>
+    <!-- Ponto de entrada explícito para o navegador -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { SheetRow } from '../types';
-import { SkeletonRow } from './SkeletonRow';
+import { SheetRow } from '../types.ts';
+import { SkeletonRow } from './SkeletonRow.tsx';
 
 interface DataTableProps {
   data: SheetRow[];

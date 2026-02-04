@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import DashboardView from './components/DashboardView';
-import DataTable from './components/DataTable';
-import { fetchSpreadsheetData } from './services/googleSheets';
-import { SheetRow, AppState, GlobalFilters } from './types';
+import DashboardView from './components/DashboardView.tsx';
+import DataTable from './components/DataTable.tsx';
+import { fetchSpreadsheetData } from './services/googleSheets.ts';
+import { SheetRow, AppState, GlobalFilters } from './types.ts';
 
 type ViewType = 'analytics' | 'details';
 
