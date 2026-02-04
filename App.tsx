@@ -94,7 +94,7 @@ const App: React.FC = () => {
             <button 
               onClick={loadData}
               disabled={state.loading}
-              className="h-10 px-6 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-800 disabled:opacity-50 flex items-center gap-3 transition-all active:scale-95 shadow-lg shadow-slate-200"
+              className="h-10 px-6 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest disabled:opacity-50 flex items-center gap-3 shadow-lg shadow-slate-200"
             >
               {state.loading ? 'Atualizando...' : 'Sincronizar'}
               <svg className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -163,10 +163,10 @@ const MetricBlock: React.FC<{ label: string; value: string | number; sub: string
 const NavBtn: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => (
   <button
     onClick={onClick}
-    className={`px-6 py-2 rounded-lg text-xs font-bold tracking-tight transition-all duration-200 ${
+    className={`px-6 py-2 rounded-lg text-xs font-bold tracking-tight ${
       active 
         ? 'bg-white text-indigo-600 shadow-sm' 
-        : 'text-slate-500 hover:text-slate-800'
+        : 'text-slate-500'
     }`}
   >
     {label}

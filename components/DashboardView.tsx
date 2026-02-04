@@ -62,7 +62,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ data, loading }) => {
       {/* Coluna Principal: Turnos e Performance por Domínio */}
       <div className="lg:col-span-8 flex flex-col gap-6 h-full min-h-0">
         
-        {/* Indicadores de Turno Profissionais - Atualizado para 4 Colunas */}
+        {/* Indicadores de Turno Profissionais */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 h-auto lg:h-32 shrink-0">
           <TurnoCard label="Equipe Matutina" sub="Operação Turno 01" count={analytics.turno1} color="indigo" />
           <TurnoCard label="Equipe Vespertina" sub="Operação Turno 02" count={analytics.turno2} color="slate" />
@@ -114,8 +114,8 @@ const TurnoCard: React.FC<{ label: string; sub: string; count: number; color: 'i
   };
 
   return (
-    <div className={`${colorStyles[color]} p-6 rounded-2xl shadow-xl border border-white/10 flex flex-col justify-between relative overflow-hidden group transition-all hover:-translate-y-1`}>
-      <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform"></div>
+    <div className={`${colorStyles[color]} p-6 rounded-2xl shadow-xl border border-white/10 flex flex-col justify-between relative overflow-hidden`}>
+      <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12"></div>
       <div>
         <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">{sub}</h4>
         <p className="text-sm font-semibold text-white tracking-tight">{label}</p>
@@ -155,11 +155,11 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
     
     <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-5">
       {items.length > 0 ? items.map((item, idx) => (
-        <div key={item.label} className="group">
+        <div key={item.label}>
           <div className="flex justify-between items-end mb-1.5">
             <div className="flex items-center gap-3 overflow-hidden">
               <span className="text-[10px] font-bold text-slate-200">{ (idx + 1).toString().padStart(2, '0') }</span>
-              <span className="text-xs font-semibold text-slate-600 truncate tracking-tight group-hover:text-slate-900 transition-colors" title={item.label}>
+              <span className="text-xs font-semibold text-slate-600 truncate tracking-tight" title={item.label}>
                 {item.label}
               </span>
             </div>
@@ -170,7 +170,7 @@ const ListCard: React.FC<ListCardProps> = ({ title, items, barColor, icon }) => 
           </div>
           <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className={`h-full ${barColor} rounded-full transition-all duration-1000 ease-out`}
+              className={`h-full ${barColor} rounded-full`}
               style={{ width: `${item.percentage}%` }}
             ></div>
           </div>
@@ -203,16 +203,16 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
     
     <div className="flex-1 px-8 py-8 flex items-end justify-around gap-6 overflow-hidden">
       {items.length > 0 ? items.map((item) => (
-        <div key={item.label} className="flex-1 flex flex-col items-center group h-full justify-end max-w-[80px]">
+        <div key={item.label} className="flex-1 flex flex-col items-center h-full justify-end max-w-[80px]">
           <div className="relative flex-1 w-full flex flex-col justify-end">
-             {/* Value Tooltip above bar */}
-             <div className="text-center mb-2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-               <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">{item.count}</span>
+             {/* Static percentage label above bar if needed, or keeping it strictly static as requested */}
+             <div className="text-center mb-1">
+               <span className="text-[10px] font-mono font-bold text-slate-300">{item.count}</span>
              </div>
              
              {/* Styled Vertical Bar */}
              <div 
-               className={`w-full ${barColor} rounded-t-xl transition-all duration-1000 ease-out group-hover:brightness-110 shadow-lg shadow-indigo-100 relative overflow-hidden`}
+               className={`w-full ${barColor} rounded-t-xl shadow-lg shadow-indigo-100 relative overflow-hidden`}
                style={{ height: `${item.percentage}%`, minHeight: '8px' }}
              >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
@@ -240,7 +240,7 @@ const VerticalBarCard: React.FC<ListCardProps> = ({ title, items, barColor, icon
     </div>
     
     <div className="px-6 py-3 bg-slate-50/50 flex justify-center items-center border-t border-slate-50">
-      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em]">Visualização Estratégica Executiva</span>
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.4em]">Visualização Estratégica Estrutural</span>
     </div>
   </div>
 );
