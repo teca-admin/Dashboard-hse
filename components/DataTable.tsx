@@ -114,6 +114,16 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
     return selectedRow.rawRows.filter(r => r.dominios === modalFilterDominio);
   }, [selectedRow, modalFilterDominio]);
 
+  // Cálculo da Média de Carga Filtrada para o Modal
+  const modalFilteredAverage = useMemo(() => {
+    if (modalItemsFiltered.length === 0) return 0;
+    const sum = modalItemsFiltered.reduce((acc, curr) => {
+      const val = parseFloat(curr.peso.replace(',', '.')) || 0;
+      return acc + val;
+    }, 0);
+    return sum / modalItemsFiltered.length;
+  }, [modalItemsFiltered]);
+
   // Extrair domínios únicos do protocolo selecionado para o filtro do modal
   const uniqueDominiosInModal = useMemo(() => {
     if (!selectedRow) return [];
@@ -254,8 +264,10 @@ const DataTable: React.FC<DataTableProps> = ({ data, loading }) => {
                    <p className="text-xs font-bold text-slate-800">{selectedRow.turno}</p>
                  </div>
                  <div className="text-left border-l border-slate-100 pl-10">
-                   <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Média de Carga</span>
-                   <p className="text-sm font-extrabold text-indigo-600">{selectedRow.mediaPeso.toFixed(2)} pts</p>
+                   <span className="block text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Média de Carga {modalFilterDominio ? '(Filtrada)' : ''}</span>
+                   <p className="text-sm font-extrabold text-indigo-600 tabular-nums">
+                     {modalFilteredAverage.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pts
+                   </p>
                  </div>
                </div>
 
