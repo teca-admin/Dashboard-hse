@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import DataTable from './components/DataTable';
 import DashboardView from './components/DashboardView';
 import { fetchSpreadsheetData } from './services/googleSheets';
 import { SheetRow, AppState } from './types';
@@ -12,8 +11,6 @@ const App: React.FC = () => {
     error: null,
     searchTerm: '',
   });
-
-  const [activeTab, setActiveTab] = useState<'dados' | 'dashboard'>('dashboard');
 
   const loadData = useCallback(async (isBackground = false) => {
     if (!isBackground) {
@@ -41,11 +38,9 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const filteredData = useMemo(() => state.data, [state.data]);
-
   return (
     <div className="h-screen bg-white flex flex-col p-4 lg:px-8 lg:py-4 overflow-hidden">
-      {/* Optimized Unified Executive Header */}
+      {/* Optimized Unified Executive Header - Clean Version */}
       <header className="w-full max-w-[1700px] mx-auto mb-4 shrink-0 border-b border-slate-100 pb-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           
@@ -68,12 +63,11 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Unified KPI Metrics Section Removida por Solicitação */}
-          
-          {/* Tab Navigation Controls */}
-          <div className="flex bg-slate-100 p-1 rounded-xl shrink-0">
-            <NavBtn active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} label="Visão Analítica" />
-            <NavBtn active={activeTab === 'dados'} onClick={() => setActiveTab('dados')} label="Dataset" />
+          {/* Versão simplificada: Sem botões de navegação */}
+          <div className="hidden lg:flex items-center gap-3">
+             <div className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg">
+                <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-widest">Painel Analítico Estratégico</span>
+             </div>
           </div>
         </div>
       </header>
@@ -100,10 +94,6 @@ const App: React.FC = () => {
               </button>
             </div>
           </div>
-        ) : activeTab === 'dados' ? (
-          <div className="h-full">
-            <DataTable data={filteredData} loading={state.loading} />
-          </div>
         ) : (
           <div className="h-full">
             <DashboardView data={state.data} loading={state.loading} />
@@ -127,18 +117,5 @@ const App: React.FC = () => {
     </div>
   );
 };
-
-const NavBtn: React.FC<{ active: boolean; onClick: () => void; label: string }> = ({ active, onClick, label }) => (
-  <button
-    onClick={onClick}
-    className={`px-4 py-1.5 rounded-lg text-[11px] font-bold tracking-tight transition-all ${
-      active 
-        ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-black/5' 
-        : 'text-slate-500 hover:text-slate-700'
-    }`}
-  >
-    {label}
-  </button>
-);
 
 export default App;
